@@ -317,6 +317,22 @@ input[type=range]{width:100%;accent-color:var(--gold);height:30px}
 .editing .sheet{border-radius:24px;max-height:58vh;padding-bottom:16px}
 .editing .sheet.tall{max-height:calc(100vh - 110px - var(--safe-b) - var(--safe-t))}
 .sheet-open .hintpill{display:none!important}
+.prog{margin-top:6px}.pb{height:7px;border-radius:9px;background:rgba(255,255,255,.1);overflow:hidden}.pb i{display:block;height:100%;background:linear-gradient(90deg,#c9963e,#f2d27c);border-radius:9px}.prog small{color:var(--muted);font-size:.75rem}
+.rcard{display:flex;gap:12px;align-items:flex-start;padding:6px 0;cursor:pointer}.rcard .th{flex:0 0 70px;height:105px;border-radius:3px 6px 6px 3px}.rt2{flex:1;min-width:0}.rt2 b{display:block}.rt2 small{color:var(--muted)}.rt2 .btn{margin-top:8px;padding:8px 14px}
+.today{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.today b{display:block;font-family:"Fraunces",serif;font-size:1.6rem;font-weight:500}.today small{color:var(--muted);font-size:.72rem}
+#page section.today{padding:12px}
+.dchart{display:flex;align-items:flex-end;gap:4px;height:120px}.dchart div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.dchart i{display:block;width:100%;min-height:2px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#f2d27c,#a8742a)}.dchart small{font-size:.65rem;color:var(--muted);margin-top:3px}.dv{font-size:.6rem;color:var(--muted)}
+#lgP{width:150px;text-align:center;font-family:"Fraunces",serif;font-size:2.4rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;color:inherit;padding:4px}
+.sess div{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.88rem}.sess span{flex:1;color:var(--muted)}.sess button{background:none;border:none;color:var(--muted);cursor:pointer}
+.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.cgrid button{aspect-ratio:2/3;border:none;border-radius:4px 7px 7px 4px;background:#2a221c center/cover no-repeat;box-shadow:0 4px 10px rgba(0,0,0,.4);cursor:pointer}
+#crop{position:fixed;inset:0;z-index:200;background:#0d0a08;display:none;flex-direction:column}#crop.open{display:flex}
+#crop .cw{flex:1;position:relative;overflow:hidden;touch-action:none;display:grid;place-items:center}
+#crop img{max-width:94vw;max-height:72vh;display:block;user-select:none;-webkit-user-drag:none}
+#crop .box{position:absolute;border:2px solid var(--gold);box-shadow:0 0 0 9999px rgba(0,0,0,.55)}
+#crop .box i{position:absolute;width:22px;height:22px;background:var(--gold);border-radius:50%}
+#crop .cbar{display:flex;gap:10px;padding:12px 16px calc(14px + var(--safe-b))}#crop .cbar .btn{flex:1}
+#crop .ct{padding:calc(14px + var(--safe-t)) 16px 6px;text-align:center;color:var(--muted)}
 .ehead{display:flex;align-items:center;gap:8px;margin:-4px 0 6px}.ehead .grow{flex:1}
 .xb{width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.1);color:inherit;font-size:1.05rem;cursor:pointer;display:grid;place-items:center}
 .ehead .btn-done{padding:10px 22px}
@@ -446,8 +462,8 @@ body:not(.editing) .wrap{padding-bottom:calc(96px + var(--safe-b))}
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo">Deshacer</button></div>
 <div id="viewer"><button class="vx" id="vClose" aria-label="Cerrar">✕</button><div class="vstage" id="vStage"></div>
 <div class="vinfo"><b id="vTitle"></b><span id="vSub"></span><div class="hint3d">Arrastra para girarlo</div></div>
-<div class="vbtns"><button id="vDet"><span>ⓘ</span>Detalles</button><button id="vEdit"><span>🎚️</span>Editar</button><button id="vPh"><span>📷</span>Fotos</button><button class="pri" id="vBack"><span>📚</span>Devolver</button></div></div>
-<div class="overlay" id="ov"><div class="sheet" id="sheet"></div></div>
+<div class="vbtns"><button id="vDet"><span>ⓘ</span>Detalles</button><button id="vEdit"><span>🎚️</span>Editar</button><button id="vPh"><span>🖼️</span>Portada</button><button class="pri" id="vBack"><span>📚</span>Devolver</button></div></div>
+<div id="crop"></div><div class="overlay" id="ov"><div class="sheet" id="sheet"></div></div>
 <input type="file" id="fileIn" accept="image/*" hidden>
 <input type="file" id="camIn" accept="image/*" capture="environment" hidden>
 <input type="file" id="jsonIn" accept="application/json,.json" hidden>
@@ -620,13 +636,15 @@ function backTex(key,tintHex,woodKey){
 /* ======================= adornos (dibujos propios) ======================= */
 // alturas en cm reales
 const DECOS={
-  monstera:{n:'Planta de interior',cat:'plantas',h:28,f:plantSVG}, cactus:{n:'Cactus',cat:'plantas',h:19,f:cactusSVG}, suculenta:{n:'Suculenta',cat:'plantas',h:10,f:succSVG},
-  potos:{n:'Potos colgante',cat:'plantas',h:16,f:pothosSVG}, eucalipto:{n:'Eucalipto',cat:'plantas',h:30,f:eucaSVG},
-  vela:{n:'Vela en vaso',cat:'luz',h:11,f:candleSVG}, velas:{n:'Candelabro de latón',cat:'luz',h:26,f:candlesSVG}, farol:{n:'Farol de latón',cat:'luz',h:22,f:lanternSVG}, huevo:{n:'Huevo de dragón',cat:'deco',h:19,f:eggSVG}, lampara:{n:'Lámpara',cat:'luz',h:28,f:lampSVG},
-  gato:{n:'Gato de cerámica',cat:'deco',h:15,f:catSVG}, globo:{n:'Globo terráqueo',cat:'deco',h:24,f:globeSVG}, reloj:{n:'Reloj',cat:'deco',h:13,f:clockSVG},
-  arena:{n:'Reloj de arena',cat:'deco',h:16,f:hourSVG}, amatista:{n:'Geoda',cat:'deco',h:9,f:geodeSVG}, taza:{n:'Taza',cat:'deco',h:9,f:mugSVG},
-  sujeta:{n:'Sujetalibros',cat:'deco',h:17,f:bookendSVG}, marco:{n:'Marco de fotos',cat:'deco',h:18,f:frameSVG}, craneo:{n:'Busto clásico',cat:'deco',h:20,f:bustSVG},
-  pluma:{n:'Tintero y pluma',cat:'deco',h:16,f:quillSVG}, tetera:{n:'Tetera',cat:'deco',h:14,f:teapotSVG},
+  monstera:{n:'Costilla de Adán',cat:'plantas',h:30,f:plantSVG}, cactus:{n:'Cactus',cat:'plantas',h:19,f:cactusSVG}, suculenta:{n:'Suculenta',cat:'plantas',h:10,f:succSVG},
+  potos:{n:'Potos colgante',cat:'plantas',h:16,f:pothosSVG}, eucalipto:{n:'Eucalipto en jarrón',cat:'plantas',h:32,f:eucaSVG},
+  vela:{n:'Vela en vaso',cat:'luz',h:11,f:candleSVG}, velas:{n:'Candelabro de latón',cat:'luz',h:26,f:candlesSVG}, farol:{n:'Farol de latón',cat:'luz',h:22,f:lanternSVG}, huevo:{n:'Huevo de dragón',cat:'magia',h:19,f:eggSVG}, lampara:{n:'Lámpara',cat:'luz',h:28,f:lampSVG},
+  gato:{n:'Gato de cerámica',cat:'deco',hide:1,h:15,f:catSVG}, globo:{n:'Globo terráqueo',cat:'deco',h:24,f:globeSVG}, reloj:{n:'Reloj',cat:'deco',hide:1,h:13,f:clockSVG},
+  arena:{n:'Reloj de arena',cat:'deco',h:16,f:hourSVG}, amatista:{n:'Geoda',cat:'deco',h:9,f:geodeSVG}, taza:{n:'Taza',cat:'deco',hide:1,h:9,f:mugSVG},
+  sujeta:{n:'Sujetalibros',cat:'deco',hide:1,h:17,f:bookendSVG}, marco:{n:'Marco de fotos',cat:'deco',h:18,f:frameSVG}, craneo:{n:'Busto clásico',cat:'deco',hide:1,h:20,f:bustSVG},
+  pluma:{n:'Tintero y pluma',cat:'deco',h:16,f:quillSVG}, tetera:{n:'Tetera',cat:'deco',hide:1,h:14,f:teapotSVG},
+  calavera:{n:'Calavera antigua',cat:'magia',h:11,f:skullSVG}, bola:{n:'Bola de cristal',cat:'magia',h:17,f:crystalSVG}, pociones:{n:'Pociones',cat:'magia',h:18,f:potionSVG},
+  viejos:{n:'Libros antiguos',cat:'magia',h:10,f:oldBooksSVG},
   foto:{n:'Tu objeto (foto)',cat:'fotos',h:18,photo:1}, emoji:{n:'Emoji',cat:'emoji',h:9,emoji:1},
 };
 const EMOJIS=['🐉','🦉','🧸','🕯️','🏮','🍄','🐚','🗝️','⚔️','🛡️','🧭','🔮','🪐','🎻','📯','🦊','🐈‍⬛','🐢','🌹','🥀','🍂','🎃','🎄','🦢','🪶','🏺','🗿','👑','💎','🎲','♟️','🧿'];
@@ -868,6 +886,109 @@ function eggSVG(p,it){const tone=(it&&it.tone)==='esmeralda'?['#0b2a1c','#1f6b44
    <ellipse cx="70" cy="240" rx="56" ry="6" fill="url(#${p}iron)"/>
   </g></svg>`}
 
+/* ---- objetos realistas v4 (dibujos propios) ---- */
+const grainF=(p,id='tx',f=.9,a=.55)=>`<filter id="${p}${id}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${f}" numOctaves="3" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -${a*1.6} ${a}" result="k"/><feComposite in="k" in2="SourceGraphic" operator="in" result="d"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="d"/></feMerge></filter>`;
+const soft=(p)=>`<filter id="${p}sf" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="2.4"/><feOffset dx="1.5" dy="2.5"/><feComponentTransfer><feFuncA type="linear" slope=".45"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+/* maceta de cerámica */
+function potSVG(p,x,y,w,h,kind='ceramica'){const P={ceramica:['#5b5149','#a69a8c','#e9e1d6','#c8bcae','#6d6157'],terracota:['#6b2f18','#b5643c','#e39a6c','#c27146','#6b2f18'],verde:['#163028','#2f6b55','#7fb59a','#3e7d63','#163028'],negro:['#0d0c0c','#2b2a29','#5c5a57','#323130','#0d0c0c']}[kind];
+  return `<defs>${G(p,'pt'+kind,P)}${G(p,'ptr'+kind,[P[1],P[2],P[1]],'x1="0" x2="0" y1="0" y2="1"')}</defs>
+  <g filter="url(#${p}tx)"><path d="M${x-w/2} ${y}h${w}l${-w*.08} ${h}h${-w*.84}z" fill="url(#${p}pt${kind})"/>
+  <rect x="${x-w/2-3}" y="${y-6}" width="${w+6}" height="12" rx="3" fill="url(#${p}pt${kind})"/>
+  <ellipse cx="${x}" cy="${y-6}" rx="${w/2+3}" ry="4" fill="url(#${p}ptr${kind})"/></g>
+  <ellipse cx="${x}" cy="${y-5.4}" rx="${w/2-1}" ry="3" fill="#2a1d14"/><ellipse cx="${x}" cy="${y-5}" rx="${w/2-3}" ry="2.2" fill="#3b2a1d" filter="url(#${p}tx)"/>
+  <path d="M${x-w/2+6} ${y+8}c2 ${h*.35} 3 ${h*.6} 6 ${h*.85}" stroke="rgba(255,255,255,.35)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="${x}" cy="${y+h}" rx="${w*.44}" ry="2.2" fill="rgba(0,0,0,.35)"/>`}
+function leafGrad(p,id,c){return RG(p,id,[[0,c[2]],[.55,c[1]],[1,c[0]]],'cx=".45" cy=".55" r=".75"')}
+function plantSVG(p){/* costilla de Adán */
+  const leaf=(x,y,a,s,t)=>{const id=`${p}m${x}${y}`.replace(/[.-]/g,'_');const sl=[-74,-50,-28].map((yy,i)=>`<path d="M-74 ${yy+12}Q-40 ${yy+2} -14 ${yy-6}M74 ${yy+6}Q40 ${yy-2} 14 ${yy-12}" stroke="#000" stroke-width="${6.5-i}" stroke-linecap="round" fill="none"/>`).join('')+`<ellipse cx="-24" cy="-60" rx="3" ry="5" fill="#000"/><ellipse cx="22" cy="-46" rx="3" ry="4.5" fill="#000"/>`;
+    return `<g transform="translate(${x} ${y}) rotate(${a}) scale(${s})"><mask id="${id}"><path d="M0 0C-6-4-12-4-18 0C-44-8-60-34-56-62C-52-90-24-106 2-104C30-102 58-86 56-56C54-28 38-4 18 0C12-4 6-4 0 0Z" fill="#fff"/>${sl}</mask>
+     <g mask="url(#${id})"><path d="M0 0C-6-4-12-4-18 0C-44-8-60-34-56-62C-52-90-24-106 2-104C30-102 58-86 56-56C54-28 38-4 18 0C12-4 6-4 0 0Z" fill="url(#${p}lf${t})"/>
+     ${[-80,-62,-44,-28].map(yy=>`<path d="M0 ${yy+10}Q-26 ${yy+2} -54 ${yy-6}M0 ${yy+6}Q26 ${yy-2} 54 ${yy-10}" stroke="#a8d48a" stroke-width=".9" fill="none" opacity=".45"/>`).join('')}
+     <path d="M0 -2V-100" stroke="#bfe09c" stroke-width="2.2" opacity=".7"/><ellipse cx="-18" cy="-70" rx="16" ry="26" fill="#fff" opacity=".07"/></g></g>`};
+  const st=(x2,y2,c)=>`<path d="M60 168C${60+(x2-60)*.2} 140 ${x2} ${y2+30} ${x2} ${y2}" stroke="url(#${p}stem)" stroke-width="3.4" fill="none"/>`;
+  return `<svg viewBox="-28 -34 186 268"><defs>${leafGrad(p,'lf0',['#0d2a14','#1f5a2b','#3f8c45'])}${leafGrad(p,'lf1',['#123519','#2a6e35','#58a356'])}${G(p,'stem',['#3e6b2c','#6fa04b','#355f26'])}${grainF(p)}${soft(p)}</defs>
+  <g filter="url(#${p}sf)">${st(30,96)}${st(96,84)}${st(60,58)}${st(22,140)}${st(104,132)}
+  ${leaf(22,140,-62,.55,0)}${leaf(104,132,58,.5,1)}${leaf(30,96,-30,.7,1)}${leaf(96,84,26,.72,0)}${leaf(60,58,-4,.62,1)}</g>
+  <g filter="url(#${p}sf)">${potSVG(p,60,170,62,56,'ceramica')}</g></svg>`}
+function pothosSVG(p){const L=[];const vine=(pts,side)=>{let d=`M${pts[0][0]} ${pts[0][1]}`;for(let i=1;i<pts.length;i++)d+=` S${(pts[i-1][0]+pts[i][0])/2+side*6} ${(pts[i-1][1]+pts[i][1])/2} ${pts[i][0]} ${pts[i][1]}`;return d};
+  const hl=(x,y,a,s,t)=>`<g transform="translate(${x} ${y}) rotate(${a}) scale(${s})"><path d="M0 0C-4-6-16-10-16-20C-16-28-8-32 0-26C8-32 16-28 16-20C16-10 4-6 0 0Z" transform="rotate(180)" fill="url(#${p}pl${t})"/><path d="M0 0V24" stroke="#e8f2c4" stroke-width=".8" opacity=".6"/><path d="M-6 16C-3 12 3 12 6 16" stroke="#f2e9a0" stroke-width="1.6" fill="none" opacity=".35"/></g>`;
+  const v1=[[40,120],[24,136],[18,160],[22,186],[14,206]],v2=[[80,120],[98,140],[104,166],[98,190],[104,212]],v3=[[60,112],[54,92],[66,72],[58,52]],v4=[[50,114],[34,98],[28,78]],v5=[[72,114],[88,96],[96,80]];
+  [v1,v2,v3,v4,v5].forEach((v,j)=>v.slice(1).forEach(([x,y],i)=>L.push(hl(x,y,(j===2?(i%2?50:-50):j===0||j===3?(-30-i*10):(30+i*10))+(i%2?20:-20),.9-i*.05,(i+j)%3))));
+  return `<svg viewBox="0 0 120 220"><defs>${leafGrad(p,'pl0',['#1d4a1c','#3c8a34','#9ccc5a'])}${leafGrad(p,'pl1',['#24521f','#4e9a3a','#c8d870'])}${leafGrad(p,'pl2',['#183f19','#2f7a2e','#7fbf4f'])}${grainF(p)}${soft(p)}</defs>
+  <g filter="url(#${p}sf)">${[v1,v2,v3,v4,v5].map((v,i)=>`<path d="${vine(v,i%2?1:-1)}" stroke="#5c7a2a" stroke-width="1.6" fill="none"/>`).join('')}${L.join('')}</g>
+  <g filter="url(#${p}sf)">${potSVG(p,60,128,52,44,'terracota')}</g>${hl(44,124,-70,.8,1)}${hl(76,124,70,.8,0)}</svg>`}
+function succSVG(p){let l='';const ring=(n,r,len,w,sy,t)=>{for(let i=0;i<n;i++){const a=i/n*360+(r*7);l+=`<g transform="translate(60 ${78-sy}) rotate(${a}) scale(1 .55)"><path d="M0 0C${w} -${len*.3} ${w*.7} -${len*.8} 0 -${len}C-${w*.7} -${len*.8} -${w} -${len*.3} 0 0Z" fill="url(#${p}sc${t})"/><path d="M0 -${len*.15}V-${len*.9}" stroke="#e8f1e6" stroke-width=".7" opacity=".35"/></g>`}};
+  ring(11,3,40,11,0,0);ring(9,2,30,10,4,1);ring(8,1,21,9,8,0);ring(6,0,12,7,11,1);
+  return `<svg viewBox="0 0 120 130"><defs>${G(p,'sc0',['#c46a7a','#8fb3a2','#a9c8b8','#6f9c8a'],'x1="0" x2="0" y1="1" y2="0"')}${G(p,'sc1',['#d38494','#9cc0ae','#c4dccd','#7da896'],'x1="0" x2="0" y1="1" y2="0"')}${grainF(p)}${soft(p)}</defs>
+  <g filter="url(#${p}sf)">${potSVG(p,60,84,64,36,'negro')}<g transform="translate(0 0)">${l}</g></g></svg>`}
+function cactusSVG(p){const ribs=(cx,top,bot,w)=>{let s='';for(let i=-2;i<=2;i++){const x=cx+i*w/5;s+=`<path d="M${x} ${top+6}V${bot}" stroke="${i%2?'#2a5a2e':'#9ccf85'}" stroke-width="${i%2?1.6:1}" opacity=".55"/>`;for(let y=top+10;y<bot;y+=9)s+=`<g transform="translate(${x} ${y})"><circle r="1.3" fill="#f2ecd8"/><path d="M0 0l-4-3M0 0l4-3M0 0l0-4.5" stroke="#f6f0dd" stroke-width=".5"/></g>`}return s};
+  return `<svg viewBox="0 0 110 200"><defs>${G(p,'cb',['#1d4424','#3f8648','#76b46b','#4c934f','#1d4424'])}${grainF(p)}${soft(p)}</defs>
+  <g filter="url(#${p}sf)"><path d="M40 150V40C40 22 70 22 70 40V150Z" fill="url(#${p}cb)"/>${ribs(55,24,148,26)}
+   <path d="M40 104H30C20 104 18 96 18 88V66C18 56 32 56 32 66V86H40" fill="url(#${p}cb)"/>${ribs(25,60,98,12).replace(/V\d+/g,m=>m)}
+   <path d="M70 92H80C88 92 90 86 90 78V58C90 48 76 48 76 58V76H70" fill="url(#${p}cb)"/>
+   <circle cx="55" cy="26" r="5" fill="#e6587a"/><circle cx="53" cy="24" r="2" fill="#ffd0dc"/></g>
+  <g filter="url(#${p}sf)">${potSVG(p,55,152,58,42,'terracota')}</g></svg>`}
+function eucaSVG(p){let br='';const branch=(d,leaves)=>{br+=`<path d="${d}" stroke="#6e5a44" stroke-width="1.4" fill="none"/>`;leaves.forEach(([x,y,r],i)=>br+=`<g transform="translate(${x} ${y}) rotate(${i*47})"><ellipse rx="${r}" ry="${r*.92}" fill="url(#${p}eu${i%2})"/><path d="M${-r*.8} 0H${r*.8}" stroke="#d9e6df" stroke-width=".5" opacity=".5"/></g>`)};
+  branch('M56 150C52 110 44 80 30 40',[[50,120,8],[44,100,9],[38,80,10],[34,60,9],[30,42,7]]);
+  branch('M60 150C64 112 72 84 88 46',[[66,118,8],[72,96,10],[78,76,9],[84,58,8]]);
+  branch('M58 150C58 110 60 70 56 20',[[60,108,7],[58,88,9],[60,66,8],[57,44,9],[56,24,7]]);
+  return `<svg viewBox="0 0 120 250"><defs>${RG(p,'eu0',[[0,'#c9dccf'],[.7,'#8fae9c'],[1,'#5f7f6d']])}${RG(p,'eu1',[[0,'#d6e6da'],[.7,'#9dbca8'],[1,'#6a8b78']])}
+   ${G(p,'gl',['rgba(210,230,225,.28)','rgba(255,255,255,.55)','rgba(210,230,225,.12)','rgba(180,210,200,.2)','rgba(255,255,255,.4)'])}${soft(p)}</defs>
+  <g filter="url(#${p}sf)">${br}</g>
+  <g><path d="M44 150C36 170 34 214 42 244H78C86 214 84 170 76 150Z" fill="url(#${p}gl)" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/>
+   <path d="M40 200C38 214 40 232 42 244H78C80 232 82 214 80 200Z" fill="rgba(160,200,190,.25)"/><ellipse cx="60" cy="200" rx="20" ry="3" fill="rgba(230,250,245,.45)"/>
+   <path d="M48 160C44 186 44 214 48 236" stroke="#fff" stroke-width="3" opacity=".55" fill="none" stroke-linecap="round"/>
+   <path d="M56 150V244M60 150V244" stroke="#6e5a44" stroke-width="1.2" opacity=".55"/><ellipse cx="60" cy="150" rx="16" ry="3" fill="none" stroke="rgba(255,255,255,.6)"/></g></svg>`}
+function globeSVG(p){return `<svg viewBox="0 0 190 250"><defs>${brassDefs(p)}${RG(p,'oc',[[0,'#efe0b8'],[.6,'#c9a96a'],[1,'#6d4f22']],'cx=".38" cy=".35" r=".75"')}
+  <filter id="${p}map"><feTurbulence type="fractalNoise" baseFrequency=".022" numOctaves="4" seed="11"/><feColorMatrix type="matrix" values="0 0 0 0 .42  0 0 0 0 .3  0 0 0 0 .14  0 0 0 9 -4.6"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+  <clipPath id="${p}gc"><circle cx="95" cy="104" r="70"/></clipPath>${RG(p,'gsh',[[0,'#fff',.25],[.5,'#fff',0],[.85,'#000',.3],[1,'#000',.65]],'cx=".35" cy=".3" r=".8"')}${grainF(p,'tx',1.1,.4)}${soft(p)}</defs>
+  <g filter="url(#${p}sf)"><path d="M70 236h50l-6-22h-38z" fill="url(#${p}br)"/><ellipse cx="95" cy="236" rx="34" ry="6" fill="url(#${p}brv)"/><path d="M90 214v-30h10v30z" fill="url(#${p}br)"/>
+  <g clip-path="url(#${p}gc)" filter="url(#${p}tx)"><circle cx="95" cy="104" r="70" fill="url(#${p}oc)"/><rect x="0" y="0" width="190" height="200" fill="#000" filter="url(#${p}map)"/>
+   <g stroke="#5a4020" stroke-width=".6" fill="none" opacity=".45">${[-50,-25,0,25,50].map(y=>`<ellipse cx="95" cy="${104+y}" rx="${Math.sqrt(4900-y*y)}" ry="${Math.sqrt(4900-y*y)*.18}"/>`).join('')}${[-50,-20,10,40].map(x=>`<ellipse cx="95" cy="104" rx="${Math.abs(x)+6}" ry="70" transform="rotate(${x>0?8:-8} 95 104)"/>`).join('')}</g>
+   <circle cx="95" cy="104" r="70" fill="url(#${p}gsh)"/></g>
+  <path d="M95 26a78 78 0 0 1 0 156" stroke="url(#${p}br)" stroke-width="6" fill="none" transform="rotate(-18 95 104)"/><circle cx="74" cy="31" r="4" fill="url(#${p}knob)"/><circle cx="116" cy="177" r="4" fill="url(#${p}knob)"/></g></svg>`}
+function hourSVG(p){return `<svg viewBox="0 0 100 180"><defs>${G(p,'wd',['#2a1608','#6b3d1c','#a8693a','#5a3216','#2a1608'])}${G(p,'gs',['rgba(255,255,255,.08)','rgba(255,255,255,.5)','rgba(255,255,255,.06)','rgba(255,255,255,.02)','rgba(255,255,255,.3)'])}${G(p,'sd',['#b98a4a','#e6c287','#c79a5c'],'x1="0" x2="0" y1="0" y2="1"')}${grainF(p,'tx',.6,.5)}${soft(p)}</defs>
+  <g filter="url(#${p}sf)"><g filter="url(#${p}tx)"><rect x="10" y="6" width="80" height="12" rx="3" fill="url(#${p}wd)"/><rect x="10" y="162" width="80" height="12" rx="3" fill="url(#${p}wd)"/>
+   ${[18,82].map(x=>`<path d="M${x-3} 18h6v144h-6z" fill="url(#${p}wd)"/>${[40,70,100,130].map(y=>`<ellipse cx="${x}" cy="${y}" rx="5" ry="3" fill="url(#${p}wd)"/>`).join('')}`).join('')}</g>
+   <path d="M50 92L70 66C76 56 76 34 70 22H30C24 34 24 56 30 66Z" fill="rgba(220,235,240,.12)"/>
+   <path d="M34 60C42 70 46 76 50 92C54 76 58 70 66 60Z" fill="url(#${p}sd)"/><path d="M50 92V150" stroke="#e6c287" stroke-width="1.2"/>
+   <path d="M50 92L30 118C24 128 24 150 30 162H70C76 150 76 128 70 118Z" fill="rgba(220,235,240,.12)"/>
+   <path d="M28 162C30 146 40 140 50 138C60 140 70 146 72 162Z" fill="url(#${p}sd)"/>
+   <path d="M50 92L70 66C76 56 76 34 70 22H30C24 34 24 56 30 66ZM50 92L30 118C24 128 24 150 30 162H70C76 150 76 128 70 118Z" fill="url(#${p}gs)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+   <path d="M34 28C30 40 30 54 34 62M34 124C30 136 30 148 34 158" stroke="#fff" stroke-width="2.2" opacity=".55" fill="none" stroke-linecap="round"/></g></svg>`}
+function quillSVG(p){let barbs='';for(let i=0;i<34;i++){const t=i/34,x=58+t*34,y=150-t*138,l=(1-Math.abs(t-.55)*1.4)*16;barbs+=`<path d="M${x} ${y}q-${l*.6} ${l*.2} -${l} ${l*.75}M${x} ${y}q${l*.5} ${l*.1} ${l*.8} ${l*.6}" stroke="${i%3?'#ece6da':'#d7cfc0'}" stroke-width="1.1" fill="none" opacity=".9"/>`}
+  return `<svg viewBox="0 0 120 180"><defs>${RG(p,'gl',[[0,'#3d5a7a'],[.5,'#14243a'],[1,'#05080f']],'cx=".35" cy=".35" r=".8"')}${brassDefs(p)}${soft(p)}</defs>
+  <g filter="url(#${p}sf)">${barbs}<path d="M58 150Q74 80 92 12" stroke="#f6f2ea" stroke-width="1.6" fill="none"/>
+   <path d="M30 176c-14 0-18-8-16-22 2-18 10-26 14-30h28c4 4 12 12 14 30 2 14-2 22-16 22z" fill="url(#${p}gl)"/>
+   <path d="M24 158c2-12 6-20 10-24" stroke="rgba(255,255,255,.45)" stroke-width="3" fill="none" stroke-linecap="round"/>
+   <rect x="28" y="116" width="32" height="10" rx="2" fill="url(#${p}br)"/><ellipse cx="44" cy="116" rx="16" ry="3" fill="url(#${p}brv)"/><ellipse cx="44" cy="116" rx="8" ry="1.6" fill="#05080f"/></g></svg>`}
+/* nuevos: biblioteca mágica */
+function skullSVG(p){return `<svg viewBox="0 0 140 130"><defs>${RG(p,'bn',[[0,'#f6efdc'],[.55,'#d8c9a6'],[1,'#8a7652']],'cx=".4" cy=".35" r=".8"')}${grainF(p,'tx',1.3,.5)}${soft(p)}</defs>
+  <g filter="url(#${p}sf)"><g filter="url(#${p}tx)"><path d="M70 6C38 6 20 28 20 54c0 16 6 26 14 32v16c0 6 4 10 10 10h4v-8h6v8h8v-8h6v8h8v-8h6v8h4c6 0 10-4 10-10V86c8-6 14-16 14-32C120 28 102 6 70 6Z" fill="url(#${p}bn)"/></g>
+   <path d="M38 58c0-8 6-12 14-12s12 6 12 12-6 12-13 12S38 66 38 58ZM76 58c0-6 4-12 12-12s14 4 14 12-7 12-14 12-12-6-12-12Z" fill="#1a120a"/>
+   <path d="M70 72l-6 14h12z" fill="#2a1d10"/><path d="M48 98h44" stroke="#5a4a30" stroke-width="1"/>${[52,60,68,76,84].map(x=>`<path d="M${x} 92v12" stroke="#6a5a3a" stroke-width=".9"/>`).join('')}
+   <path d="M44 22c8-8 22-10 32-8" stroke="#fff" stroke-width="4" opacity=".35" fill="none" stroke-linecap="round"/><path d="M100 36c4 8 4 16 2 22" stroke="#6a5536" stroke-width="1" fill="none" opacity=".6"/></g></svg>`}
+function crystalSVG(p){return `<svg viewBox="0 0 130 170"><defs>${brassDefs(p)}${RG(p,'cb',[[0,'#f4e9ff',.95],[.3,'#b99ae8',.7],[.7,'#4b2d86',.75],[1,'#1a0f33',.9]],'cx=".4" cy=".35" r=".75"')}
+  ${RG(p,'mist',[[0,'#ffffff',.6],[1,'#c9b2ff',0]],'cx=".5" cy=".5" r=".5"')}${RG(p,'halo',[[0,'#b48cff',.35],[1,'#b48cff',0]],'cx=".5" cy=".5" r=".5"')}${soft(p)}</defs>
+  <circle cx="65" cy="66" r="64" fill="url(#${p}halo)"/>
+  <g filter="url(#${p}sf)"><path d="M30 166h70l-8-26H38z" fill="url(#${p}br)"/><path d="M36 140c4-12 14-16 29-16s25 4 29 16z" fill="url(#${p}br)"/>${[44,56,74,86].map(x=>`<path d="M${x} 128c-2 6-2 10 0 14" stroke="#3a2608" stroke-width="1.2" fill="none"/>`).join('')}
+   <circle cx="65" cy="76" r="50" fill="url(#${p}cb)"/><ellipse cx="62" cy="86" rx="26" ry="10" fill="url(#${p}mist)" opacity=".55"><animate attributeName="rx" values="22;30;22" dur="6s" repeatCount="indefinite"/></ellipse>
+   <ellipse cx="72" cy="70" rx="14" ry="6" fill="url(#${p}mist)" opacity=".4"><animate attributeName="cx" values="66;78;66" dur="7s" repeatCount="indefinite"/></ellipse>
+   <ellipse cx="46" cy="54" rx="12" ry="18" fill="#fff" opacity=".35" transform="rotate(35 46 54)"/><circle cx="84" cy="100" r="3" fill="#fff" opacity=".5"/></g></svg>`}
+function potionSVG(p){const b=(x,w,h,neck,c,lv,shape)=>{const y=190,top=y-h;const body=shape==='r'?`M${x-w/2} ${y-6}c0-${h*.5} ${w*.1}-${h*.62} ${w/2-neck/2}-${h*.7}V${top+10}h${neck}V${y-h*.7}c${w/2-neck/2-w*.1} ${h*.08} ${w/2-neck/2} ${h*.2} ${w/2-neck/2} ${h*.7}c0 4-2 6-6 6H${x-w/2+6}c-4 0-6-2-6-6z`:`M${x-w/2} ${y}V${y-h*.62}l${w/2-neck/2} -${h*.16}V${top+10}h${neck}V${y-h*.78}l${w/2-neck/2} ${h*.16}V${y}z`;
+    return `<g><clipPath id="${p}bc${x}"><path d="${body}"/></clipPath><path d="${body}" fill="rgba(210,230,235,.14)" stroke="rgba(255,255,255,.4)" stroke-width="1"/>
+     <g clip-path="url(#${p}bc${x})"><rect x="${x-w/2}" y="${y-h*lv}" width="${w}" height="${h}" fill="${c}" opacity=".85"/><ellipse cx="${x}" cy="${y-h*lv}" rx="${w/2}" ry="2.5" fill="#fff" opacity=".35"/><circle cx="${x-4}" cy="${y-h*lv*.5}" r="1.6" fill="#fff" opacity=".5"/><circle cx="${x+5}" cy="${y-h*lv*.3}" r="1" fill="#fff" opacity=".5"/></g>
+     <path d="M${x-w/2+4} ${y-6}V${y-h*.55}" stroke="#fff" stroke-width="2.4" opacity=".45" stroke-linecap="round"/>
+     <rect x="${x-neck/2-1}" y="${top}" width="${neck+2}" height="12" rx="2" fill="url(#${p}ck)"/><path d="M${x-neck/2-2} ${top+16}h${neck+4}" stroke="#a37a32" stroke-width="2"/></g>`};
+  return `<svg viewBox="0 0 150 196"><defs>${G(p,'ck',['#5a3a1c','#a7764a','#6b4524'])}${soft(p)}</defs><g filter="url(#${p}sf)">
+   ${b(38,44,120,12,'#7a1830',.55,'s')}${b(98,54,92,12,'#1f7a5a',.6,'r')}${b(128,26,70,8,'#d9a43a',.7,'s')}</g></svg>`}
+function oldBooksSVG(p){const bk=(y,w,h,c,x)=>`<g transform="translate(${x} 0)"><rect x="${70-w/2}" y="${y}" width="${w}" height="${h}" rx="3" fill="url(#${p}${c})"/><rect x="${70-w/2+3}" y="${y+2}" width="${w-6}" height="${h-4}" fill="url(#${p}pg)" opacity=".0"/>
+   <path d="M${70-w/2+10} ${y+2}v${h-4}M${70+w/2-10} ${y+2}v${h-4}" stroke="#d9b45a" stroke-width="1.2" opacity=".75"/><path d="M${70-w/2+14} ${y+2}v${h-4}M${70+w/2-14} ${y+2}v${h-4}" stroke="#d9b45a" stroke-width=".6" opacity=".6"/>
+   <rect x="${70-14}" y="${y+h*.3}" width="28" height="${h*.4}" fill="#1b0f08" opacity=".35"/></g>`;
+  return `<svg viewBox="0 0 140 110"><defs>${G(p,'b1',['#2a0e0a','#6e2418','#3a120c'],'x1="0" x2="0" y1="0" y2="1"')}${G(p,'b2',['#0e1d14','#2c5a3a','#132a1c'],'x1="0" x2="0" y1="0" y2="1"')}${G(p,'b3',['#2a1a0a','#7a5226','#3a240e'],'x1="0" x2="0" y1="0" y2="1"')}${grainF(p,'tx',1.2,.6)}${soft(p)}</defs>
+  <g filter="url(#${p}sf)"><g filter="url(#${p}tx)">${bk(78,128,26,'b1',0)}${bk(56,112,22,'b2',4)}${bk(36,118,20,'b3',-3)}</g>
+   <path d="M18 82h-6v20h6M14 60h-6v16h6" fill="#efe4c8" opacity=".0"/></g></svg>`}
+
 /* ======================= estado ======================= */
 const FONTS={clasica:"'Libre Baskerville',Georgia,serif",elegante:"'Cormorant Garamond',Georgia,serif",display:"'Playfair Display',Georgia,serif",moderna:"'Josefin Sans',system-ui,sans-serif",condensada:"Oswald,'Arial Narrow',sans-serif",fraunces:'Fraunces,Georgia,serif'};
 const FONT_N={clasica:'Clásica',elegante:'Elegante',display:'Display',moderna:'Moderna',condensada:'Estrecha',fraunces:'Suave'};
@@ -1091,7 +1212,8 @@ function shelfAction(a,si){
   if(a==='lock'){sh.locked=!sh.locked;sh.items.forEach(it=>it.locked=sh.locked);toast(sh.locked?'Balda fijada: sus libros no se moverán':'Balda desbloqueada')}
   if(a==='up'&&si>0)[S.shelves[si-1],S.shelves[si]]=[S.shelves[si],S.shelves[si-1]];
   if(a==='down'&&si<S.shelves.length-1)[S.shelves[si+1],S.shelves[si]]=[S.shelves[si],S.shelves[si+1]];
-  if(a==='del'){if(S.shelves.length<=1)return toast('Tiene que quedar al menos una balda');const r=S.shelves.splice(si,1)[0];toast('Balda quitada',()=>{S.shelves.splice(si,0,r);save();render()})}
+  if(a==='del'){if(S.shelves.length<=1)return toast('Tiene que quedar al menos una balda');const nb=sh.items.filter(i=>i.type==='book').length;
+    if(nb&&shelfAction.armed!==sh.id){shelfAction.armed=sh.id;setTimeout(()=>{if(shelfAction.armed===sh.id)shelfAction.armed=null},3500);return toast(`Esta balda tiene ${nb} libros. Pulsa ✕ otra vez para quitarla`)}shelfAction.armed=null;const r=S.shelves.splice(si,1)[0];toast('Balda quitada',()=>{S.shelves.splice(si,0,r);save();render()})}
   save();render()}
 
 /* ======================= modo edición ======================= */
@@ -1271,10 +1393,11 @@ function openEditor(b,isNew,tab='tamano'){
         $('#artT',P).onclick=()=>{b.spineArt=!b.spineArt;pane('aspecto');up()}}}
     if(t==='fotos'){const slots=[['cover','Portada'],['spine','Lomo'],['edge','Canto'],['back','Contraportada']];let sel='cover';
       const draw=()=>{P.innerHTML=`<div class="photos">${slots.map(([k,n])=>`<div class="pslot ${b.imgs[k]?'has':''} ${k===sel?'sel':''}" data-k="${k}"><div class="ph" style="${b.imgs[k]?`background-image:url('${imgSrc(b.imgs[k])}')`:''};${k==='spine'||k==='edge'?'aspect-ratio:1/3;width:40%':''}"></div>${n}</div>`).join('')}</div>
-        <div class="menu"><button id="pCam">Hacer foto <span>📷</span></button><button id="pGal">Elegir de la galería <span>🖼️</span></button>${b.imgs[sel]?'<button id="pDel" style="color:#ff9d8c">Quitar foto <span>⊖</span></button>':''}</div>
+        <div class="menu">${sel==='cover'?'<button id="pWeb">Buscar portada en internet <span>🔎</span></button>':''}<button id="pCam">Hacer foto <span>📷</span></button><button id="pGal">Elegir de la galería <span>🖼️</span></button>${b.imgs[sel]?'<button id="pDel" style="color:#ff9d8c">Quitar foto <span>⊖</span></button>':''}</div>
         <p class="hint" style="margin-top:10px">Haz la foto lo más recta posible y recortada al libro. La del lomo se ve tal cual en la estantería; la del canto, al ponerlo «de canto».</p>`;
         $('.photos',P).onclick=e=>{const s=e.target.closest('.pslot');if(s){sel=s.dataset.k;draw()}};
-        const put=async cam=>{const d=await pickImage(cam);if(!d)return;b.imgs[sel]=await Store.putImg(d);if(sel==='cover'){const c=await avgColor(d);if(c&&!b.imgs.spine){b.color=c.left;b.text=readable(c.left)}}if(sel==='spine')b.mode='spine';if(sel==='edge')b.mode='edge';draw();up()};
+        const put=async cam=>{let d=await pickImage(cam);if(!d)return;d=await cropImage(d,sel);if(!d)return;b.imgs[sel]=await Store.putImg(d);if(sel==='cover'){const c=await avgColor(d);if(c&&!b.imgs.spine){b.color=c.left;b.text=readable(c.left)}}if(sel==='spine')b.mode='spine';if(sel==='edge')b.mode='edge';draw();up()};
+        if($('#pWeb',P))$('#pWeb',P).onclick=()=>openCoverPicker(b,()=>openEditor(b,false,'fotos'));
         $('#pCam',P).onclick=()=>put(true);$('#pGal',P).onclick=()=>put(false);if($('#pDel',P))$('#pDel',P).onclick=()=>{if(String(b.imgs[sel]).startsWith('mp:'))b.mpOff=[...(b.mpOff||[]),sel];delete b.imgs[sel];draw();up()}};draw()}
     if(t==='datos'){P.innerHTML=`<label class="lbl">Título</label><input type="text" id="dT" value="${esc(b.title)}">
       <label class="lbl">Autor</label><input type="text" id="dA" value="${esc(b.author)}">
@@ -1335,7 +1458,7 @@ function sortBooks(how){
 /* ---------- objetos ---------- */
 function openDecos(){
   hint('Toca un objeto para ponerlo en la balda elegida');
-  const cats={plantas:'Plantas',luz:'Luz',deco:'Decoración',fotos:'Tus fotos',emoji:'Emoji'};let cat='plantas';
+  const cats={magia:'Biblioteca mágica',luz:'Luz',plantas:'Plantas',deco:'Decoración',fotos:'Tus fotos',emoji:'Emoji'};let cat='magia';
   const sh=openSheet(`<div class="tabs" id="dc">${Object.entries(cats).map(([k,n])=>`<button data-t="${k}" class="${k===cat?'sel':''}">${n}</button>`).join('')}</div>
    <div id="dg"></div><label class="lbl">Ponerlo en</label>${shelfSelect(S.shelves[0].id)}`,{clear:true});
   const draw=()=>{const g=$('#dg',sh);
@@ -1343,7 +1466,7 @@ function openDecos(){
       const add=async cam=>{const d=await pickImage(cam);if(!d)return;const it=D('foto',{img:await Store.putImg(d)});addDeco(it,$('#shSel',sh).value)};$('#ph1',g).onclick=()=>add(true);$('#ph2',g).onclick=()=>add(false);return}
     if(cat==='emoji'){g.innerHTML=`<div class="emrow">${EMOJIS.map(e=>`<button>${e}</button>`).join('')}</div><input type="text" id="emc" placeholder="…o escribe cualquier emoji" style="margin-top:10px" maxlength="8">`;
       $('.emrow',g).onclick=e=>{if(e.target.tagName==='BUTTON')addDeco(D('emoji',{emoji:e.target.textContent}),$('#shSel',sh).value)};$('#emc',g).onchange=e=>{if(e.target.value.trim())addDeco(D('emoji',{emoji:e.target.value.trim()}),$('#shSel',sh).value)};return}
-    g.innerHTML=`<div class="deco-grid">${Object.entries(DECOS).filter(([,d])=>d.cat===cat).map(([k,d])=>`<div class="dopt" data-k="${k}"><span class="n">${d.n}</span>${d.f('o'+k)}</div>`).join('')}</div>`;
+    g.innerHTML=`<div class="deco-grid">${Object.entries(DECOS).filter(([,d])=>d.cat===cat&&!d.hide).map(([k,d])=>`<div class="dopt" data-k="${k}"><span class="n">${d.n}</span>${d.f('o'+k)}</div>`).join('')}</div>`;
     $('.deco-grid',g).onclick=e=>{const o=e.target.closest('.dopt');if(o)addDeco(D(o.dataset.k),$('#shSel',sh).value)}};
   $('#dc',sh).onclick=e=>{const b=e.target.closest('button');if(!b)return;cat=b.dataset.t;$$('#dc button',sh).forEach(x=>x.classList.toggle('sel',x===b));draw()};draw()}
 function addDeco(it,shelfId){const s=S.shelves.find(x=>x.id===shelfId)||S.shelves[0];s.items.push(it);save();render();toast(`${DECOS[it.kind].n} añadido`,()=>{const f=findItem(it.id);if(f){f.shelf.items.splice(f.index,1);save();render()}})}
@@ -1457,11 +1580,13 @@ function openViewer(b){
   st.onpointermove=e=>{if(!V||!V.drag)return;const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;V.ry+=dx*.6;V.rx=clamp(V.rx-dy*.4,-70,70);V.vy=dx*.22;V.vx=-dy*.12};
   st.onpointerup=st.onpointercancel=()=>{if(V)V.drag=false};
   if(!b.infoTried)fetchInfo(b).then(ch=>{if(ch&&V&&V.b===b){save();openViewer(b)}});
+  if(!b.imgs.cover&&!(b.mpOff||[]).includes('cover')&&!openViewer.tried?.has(b.id)){(openViewer.tried||(openViewer.tried=new Set())).add(b.id);
+    fetchCoverFor(b).then(async u=>{if(!u)return;await setCoverFrom(b,u);if(V&&V.b===b)openViewer(b)})}
 }
 function closeViewer(){setTimeout(refreshPage,50);if(V&&V.raf)cancelAnimationFrame(V.raf);V=null;$('#viewer').classList.remove('open');$('#vStage').innerHTML=''}
 $('#vClose').onclick=closeViewer;$('#vBack').onclick=closeViewer;
 $('#vEdit').onclick=()=>{const b=V.b;closeViewer();openEditor(b)};
-$('#vPh').onclick=()=>{const b=V.b;closeViewer();openEditor(b,false,'fotos')};
+$('#vPh').onclick=()=>{const b=V.b;openCoverPicker(b,()=>{if(V&&V.b===b)openViewer(b)})};
 $('#vDet').onclick=()=>openDetails(V.b);
 
 /* ---------- información online: sinopsis y valoración ---------- */
@@ -1494,6 +1619,7 @@ function openDetails(b){
       <label class="lbl">Sinopsis</label>
       ${b.desc?`<div class="syn clip" id="syn">${esc(b.desc)}</div><button class="linkbtn" id="more">Leer más</button>`:`<p class="hint">${b.infoTried?'No he encontrado sinopsis. Puedes escribirla tú:':'Buscando sinopsis…'}</p>`}
       ${b.infoTried&&!b.desc?`<textarea id="ownDesc" placeholder="Sinopsis del libro"></textarea>`:''}
+      <label class="lbl">Progreso de lectura</label>${progressHTML(b)}<button class="btn" id="dLog" style="margin-top:8px">📖 Anotar páginas leídas</button>
       <label class="lbl">Tu valoración</label><div class="stars" id="myR">${[1,2,3,4,5].map(i=>`<span data-v="${i}" class="${i<=b.rating?'on':''}">★</span>`).join('')}</div>
       <label class="lbl">Tu reseña</label><textarea id="myRev" placeholder="¿Qué te ha parecido? Personajes, momentos favoritos, citas…" style="min-height:120px">${esc(b.review||'')}</textarea>
       <div class="row2"><div><label class="lbl">Estado</label><select id="dSt2">${Object.entries(STATUS).map(([k,n])=>`<option value="${k}" ${k===b.status?'selected':''}>${n}</option>`).join('')}</select></div>
@@ -1505,7 +1631,7 @@ function openDetails(b){
     let rt;$('#myRev',sh).oninput=e=>{b.review=e.target.value;clearTimeout(rt);rt=setTimeout(save,400)};
     $('#dSt2',sh).onchange=e=>{b.status=e.target.value;if(b.status==='leido'&&!b.readAt)b.readAt=Date.now();save();refreshItem(b.id)};
     $('#reInfo',sh).onclick=async()=>{b.desc=b.desc&&b.descOwn?b.desc:'';b.avgRating=0;toast('Buscando…');await fetchInfo(b);draw()};
-    $('#dOk2',sh).onclick=closeSheet};
+    $('#dOk2',sh).onclick=closeSheet;$('#dLog',sh).onclick=()=>openLog(b,()=>openDetails(b))};
   draw();
   if(!b.infoTried)fetchInfo(b).then(()=>{if($('#ov').classList.contains('open'))draw()});
 }
@@ -1542,6 +1668,16 @@ function buildMyLibrary2(prev){
     return b}),...(DECO2[i]||[]).map(([k,o])=>D(k,o||{}))]}));
   const extra=(prev||[]).filter(b=>!used.has(b.id));if(extra.length)shelves.push({id:uid(),locked:false,items:extra});
   return shelves}
+/* repone los libros de tu lista que falten (sin tocar el resto) */
+function restoreMissing(){const L=t=>(t||'').toLowerCase();const have=new Set(allBooks().map(b=>L(b.title)));const fresh=buildMyLibrary2([]);let n=0;
+  MY_LIBRARY2.forEach((row,i)=>{const miss=row.filter(e=>!have.has(L(e.t)));if(!miss.length)return;
+    const sib=row.find(e=>have.has(L(e.t)));
+    if(!sib){S.shelves.splice(Math.min(i,S.shelves.length),0,fresh[i]);n+=miss.length;return}
+    const shelf=S.shelves.find(s=>s.items.some(x=>L(x.title)===L(sib.t)));
+    row.forEach((e,k)=>{if(have.has(L(e.t)))return;const nb=fresh[i].items.find(x=>L(x.title)===L(e.t));
+      let at=0;for(let j=k-1;j>=0;j--){const ix=shelf.items.findIndex(x=>L(x.title)===L(row[j].t));if(ix>=0){at=ix+1;break}}
+      shelf.items.splice(at,0,nb);have.add(L(e.t));n++})});
+  return n}
 function buildMyLibrary(){
   return MY_LIBRARY.map(sh=>({id:uid(),locked:false,items:[
     ...sh.books.map(([title,author,m,color,text,h,t,art,font])=>newBook({title,author,color,text,h,t,w:Math.round(h*.66*10)/10,mode:m==='c'?'cover':'spine',
@@ -1555,7 +1691,7 @@ async function fetchCoverFor(b){
   // 1) Google Books (edición en español si existe)
   try{const q=`intitle:${b.title.replace(/[:()]/g,' ')} inauthor:${last}`;
     for(const lang of ['&langRestrict=es','']){
-      const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8&printType=books${lang}`);if(!r.ok)break;const j=await r.json();
+      const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8&printType=books${lang}`);if(r.status===429){coverRL=true;break}if(!r.ok)break;const j=await r.json();
       const it=(j.items||[]).find(x=>x.volumeInfo&&x.volumeInfo.imageLinks);if(it){const v=it.volumeInfo,th=(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail).replace('http://','https://').replace('&edge=curl','');
         if(!b.pages&&v.pageCount)b.pages=v.pageCount;if(!b.year&&v.publishedDate)b.year=v.publishedDate.slice(0,4);if(!b.genre&&v.categories)b.genre=v.categories[0];
         return (await loadImg(th.replace(/zoom=\d/,'zoom=1')+'&fife=w600-h900'))||(await loadImg(th))}}}catch(e){}
@@ -1563,14 +1699,37 @@ async function fetchCoverFor(b){
   try{const r=await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(b.title)}&author=${encodeURIComponent(last)}&limit=8&fields=cover_i,language`);const j=await r.json();
     const d=(j.docs||[]).find(x=>x.cover_i&&(x.language||[]).includes('spa'))||(j.docs||[]).find(x=>x.cover_i);if(d)return await loadImg(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`)}catch(e){}
   return null}
+let coverRL=false;
+async function coverCandidates(b,max=12){const last=lastName(b.author),out=[],seen=new Set();const add=u=>{if(u&&!seen.has(u)){seen.add(u);out.push(u)}};coverRL=false;
+  const qs=[`intitle:${b.title.replace(/[:()¡!¿?]/g,' ')} inauthor:${last}`,`${b.title} ${last}`];if(b.isbn)qs.unshift('isbn:'+b.isbn);
+  for(const q of qs){for(const lang of ['&langRestrict=es','']){try{
+    const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=20&printType=books${lang}`);if(r.status===429){coverRL=true;break}if(!r.ok)continue;const j=await r.json();
+    (j.items||[]).forEach(x=>{const v=x.volumeInfo||{};const il=v.imageLinks;if(!il)return;const th=(il.thumbnail||il.smallThumbnail).replace('http://','https://').replace('&edge=curl','');add(th.replace(/zoom=\d/,'zoom=1'))})}catch(e){}
+    if(out.length>=max)break}if(out.length>=max||coverRL)break}
+  try{const r=await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(b.title)}&author=${encodeURIComponent(last)}&limit=15&fields=cover_i,language`);const j=await r.json();
+    (j.docs||[]).filter(d=>d.cover_i).sort((a,c)=>((c.language||[]).includes('spa')?1:0)-((a.language||[]).includes('spa')?1:0)).forEach(d=>add(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`))}catch(e){}
+  return out.slice(0,max)}
+async function setCoverFrom(b,url){const big=url.includes('googleapis')||url.includes('books.google')?(await loadImg(url+'&fife=w600-h900'))||url:url;const local=await toLocal(big);
+  b.imgs.cover=local?await Store.putImg(local):big;b.autoCover=false;if(b.mpOff)b.mpOff=b.mpOff.filter(x=>x!=='cover');save();refreshItem(b.id)}
+function openCoverPicker(b,after){
+  const sh=openSheet(`<h2>Portada de «${esc(b.title)}»</h2><p class="hint" id="cpH">Buscando portadas en internet…</p><div class="cgrid" id="cpG"></div>
+    <div class="menu" style="margin-top:12px"><button id="cpWeb">Buscar imágenes en Google <span>↗</span></button><button id="cpGal">Elegir una imagen de la galería <span>🖼️</span></button><button id="cpCam">Hacer foto a la portada <span>📷</span></button></div>
+    <p class="hint">Si no aparece la buena: «Buscar imágenes en Google», mantén pulsada la portada, «Descargar imagen», y vuelve aquí a «Elegir de la galería».</p>`,{tall:true});
+  coverCandidates(b,16).then(list=>{const G=$('#cpG',sh);if(!G)return;$('#cpH',sh).textContent=list.length?'Toca la portada correcta:':(coverRL?'Google ha limitado las búsquedas un rato. Prueba en unos minutos o usa las opciones de abajo.':'No he encontrado portadas. Usa las opciones de abajo.');
+    G.innerHTML=list.map(u=>`<button style="background-image:url('${u}')" data-u="${u}"></button>`).join('');
+    G.onclick=async e=>{const x=e.target.closest('[data-u]');if(!x)return;toast('Poniendo portada…');await setCoverFrom(b,x.dataset.u);toast('Portada puesta');closeSheet();after&&after()}});
+  $('#cpWeb',sh).onclick=()=>window.open('https://www.google.com/search?tbm=isch&q='+encodeURIComponent(`${b.title} ${b.author} portada libro`),'_blank');
+  const pick=async cam=>{const d=await pickImage(cam);if(!d)return;const c=await cropImage(d,'cover');if(!c)return;b.imgs.cover=await Store.putImg(c);b.autoCover=false;save();refreshItem(b.id);closeSheet();toast('Portada puesta');after&&after()};
+  $('#cpGal',sh).onclick=()=>pick(false);$('#cpCam',sh).onclick=()=>pick(true)}
 async function autoCovers(){
   if(coverRun)return;coverRun=true;
   const todo=allBooks().filter(b=>b.autoCover&&!b.imgs.cover);let n=0,ok=0;
   for(const b of todo){n++;
     if(n===1||n%5===0)toast(`Buscando portadas… ${n}/${todo.length}`);
     const url=await fetchCoverFor(b);
-    if(url){const local=await toLocal(url);b.imgs.cover=local?await Store.putImg(local):url;ok++;refreshItem(b.id)}
-    b.autoCover=false;save();await sleep(250)}
+    if(url){const local=await toLocal(url);b.imgs.cover=local?await Store.putImg(local):url;ok++;refreshItem(b.id);b.autoCover=false}
+    else{b.coverTries=(b.coverTries||0)+1;if(b.coverTries>=3)b.autoCover=false;if(coverRL)break}
+    save();await sleep(400)}
   coverRun=false;if(todo.length)toast(`Portadas encontradas: ${ok} de ${todo.length}. Las que falten, ponlas con una foto.`)}
 
 
@@ -1597,15 +1756,18 @@ function pageHome(pg){const all=allBooks(),now=new Date(),yr=now.getFullYear();
   const reading=all.filter(b=>b.status==='leyendo'),next=all.filter(b=>b.status==='pendiente').slice(0,12),wish=all.filter(b=>b.status==='deseado');
   const doneY=all.filter(b=>b.status==='leido'&&b.readAt&&new Date(b.readAt).getFullYear()===yr).length,goal=S.settings.goal||12;
   const recent=[...all].sort((a,b)=>(b.added||0)-(a.added||0)).slice(0,12);
+  const LT=logTotals(),todayP=LT[dayKey()]||0,stk=streak(LT);let weekP=0;for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);weekP+=LT[dayKey(d)]||0}
   const h=now.getHours(),hi=h<6?'Buenas noches':h<13?'Buenos días':h<21?'Buenas tardes':'Buenas noches';
   pg.innerHTML=`<div class="phead"><h1>${hi}${S.settings.name?', '+esc(S.settings.name):''}</h1><div class="sub">${all.length} libros en tu biblioteca</div></div>
-   <section><h3>Leyendo ahora</h3>${reading.length?`<div class="hrow">${reading.map(bookCard).join('')}</div>`:`<p class="empty">Marca un libro como «Leyendo» y aparecerá aquí. Toca un libro en la estantería → Detalles → Estado.</p>`}</section>
+   <section><h3>Leyendo ahora</h3>${reading.length?reading.map(b=>`<div class="rcard" data-id="${b.id}">${thumb(b)}<div class="rt2"><b>${esc(b.title)}</b><small>${esc(b.author)}</small>${progressHTML(b)}<button class="btn pri" data-log="${b.id}">＋ Anotar páginas</button></div></div>`).join(''):`<p class="empty">Ahora mismo no estás leyendo nada.</p>`}
+     <button class="btn" id="hStart" style="margin-top:10px;width:100%">📖 Empezar un libro</button></section>
+   <section class="today"><div><b>${todayP}</b><small>páginas hoy</small></div><div><b>${weekP}</b><small>esta semana</small></div><div><b>${stk}</b><small>${stk===1?'día seguido':'días seguidos'}</small></div></section>
    <section class="goal"><div><h3>Reto ${yr}</h3><div class="gbig">${doneY}<small> / ${goal} libros</small></div></div>
      <div class="ring" style="--p:${Math.min(100,doneY/goal*100)}%"><span>${Math.round(Math.min(100,doneY/goal*100))}%</span></div></section>
    <section><h3>Próximas lecturas</h3>${next.length?`<div class="hrow">${next.map(bookCard).join('')}</div>`:`<p class="empty">Los libros que marques como «Por leer» saldrán aquí.</p>`}</section>
    ${wish.length?`<section><h3>Lista de deseos</h3><div class="hrow">${wish.map(bookCard).join('')}</div></section>`:''}
    <section><h3>Añadidos recientemente</h3><div class="hrow">${recent.map(bookCard).join('')}</div></section>`;
-  bindCards(pg)}
+  bindCards(pg);const oc=pg.onclick;pg.onclick=e=>{const l=e.target.closest('[data-log]');if(l){openLog(findItem(l.dataset.log).item);return}if(e.target.closest('#hStart'))return openStartBook();oc(e)}}
 let libQ='',libF='',libO='estante';
 function pageBooks(pg){
   pg.innerHTML=`<div class="phead"><h1>Libros</h1><div class="sub" id="lbN"></div></div>
@@ -1625,8 +1787,14 @@ function pageBooks(pg){
   $('#lbO',pg).onclick=e=>{const c=e.target.closest('.chip');if(!c)return;libO=c.dataset.v;$$('#lbO .chip',pg).forEach(x=>x.classList.toggle('sel',x===c));draw()};
   $('#lbL',pg).onclick=e=>{const c=e.target.closest('[data-id]');if(!c)return;const f=findItem(c.dataset.id);if(f)openViewer(f.item)};draw()}
 function bars(rows,max){return `<div class="bars">${rows.map(([n,v,c])=>`<div class="bar"><span class="bn">${esc(n)}</span><span class="bw"><i style="width:${Math.max(3,v/max*100)}%;${c?`background:${c}`:''}"></i></span><b>${v}</b></div>`).join('')}</div>`}
-function pageStats(pg){const all=allBooks(),read=all.filter(b=>b.status==='leido');
-  const pages=read.reduce((a,b)=>a+(+b.pages||0),0),rated=all.filter(b=>b.rating),avg=rated.length?rated.reduce((a,b)=>a+b.rating,0)/rated.length:0;
+function pageStats(pg){const all=allBooks(),read=all.filter(b=>b.status==='leido');const LT=logTotals();
+  const pages=Object.values(LT).reduce((a,v)=>a+v,0)+read.filter(b=>!(b.log||[]).length).reduce((a,b)=>a+(+b.pages||0),0);
+  const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push([d,LT[dayKey(d)]||0])}const dmax=Math.max(10,...days.map(x=>x[1]));
+  let m30=0;for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);m30+=LT[dayKey(d)]||0}
+  const daily=`<section><h3>Lectura diaria</h3><div class="dchart">${days.map(([d,v])=>`<div><span class="dv">${v||''}</span><i style="height:${v/dmax*100}%"></i><small>${'dlmxjvs'[d.getDay()]}</small></div>`).join('')}</div>
+    <div class="today" style="margin-top:12px"><div><b>${LT[dayKey()]||0}</b><small>hoy</small></div><div><b>${Math.round(m30/30)}</b><small>media/día (30 d)</small></div><div><b>${streak(LT)}</b><small>racha</small></div></div>
+    ${all.filter(b=>b.status==='leyendo').map(b=>`<div style="margin-top:10px"><small><b>${esc(b.title)}</b></small>${progressHTML(b)}</div>`).join('')}</section>`;
+  const _x=0,rated=all.filter(b=>b.rating),avg=rated.length?rated.reduce((a,b)=>a+b.rating,0)/rated.length:0;
   const cnt=(arr,key)=>{const m={};arr.forEach(b=>{const k=key(b);if(k)m[k]=(m[k]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
   const byA=cnt(all,b=>b.author).slice(0,8),byG=cnt(all,b=>b.genre).slice(0,8),byS=cnt(all,b=>b.status?STATUS[b.status]:'Sin estado');
   const byStars=[5,4,3,2,1].map(n=>['★'.repeat(n),all.filter(b=>b.rating===n).length]);
@@ -1635,6 +1803,7 @@ function pageStats(pg){const all=allBooks(),read=all.filter(b=>b.status==='leido
   const cols=['#d9a441','#a8432f','#3e7a5a','#4b6c8f','#8c3b52','#6a4a7a','#c96b3c','#5f7f5a'];
   pg.innerHTML=`<div class="phead"><h1>Estadísticas</h1><div class="sub">Tu biblioteca en números</div></div>
    <div class="tiles4"><div><b>${all.length}</b><small>libros</small></div><div><b>${read.length}</b><small>leídos</small></div><div><b>${pages.toLocaleString('es')}</b><small>páginas leídas</small></div><div><b>${avg?avg.toFixed(1).replace('.',','):'—'}</b><small>nota media</small></div></div>
+   ${daily}
    <section><h3>Autores</h3>${byA.length?bars(byA.map(([n,v],i)=>[n,v,cols[i%8]]),byA[0][1]):'<p class="empty">—</p>'}</section>
    <section><h3>Estado de lectura</h3>${bars(byS.map(([n,v],i)=>[n,v,cols[(i+3)%8]]),Math.max(...byS.map(x=>x[1]),1))}</section>
    ${byG.length?`<section><h3>Géneros</h3>${bars(byG.map(([n,v],i)=>[n,v,cols[(i+5)%8]]),byG[0][1])}</section>`:''}
@@ -1656,6 +1825,66 @@ function pageProfile(pg){const s=S.settings;
   $('#pfE',pg).onclick=()=>{goPage('biblioteca');setEditing(true)};$('#pfS',pg).onclick=()=>{goPage('biblioteca');setEditing(true);$('#dock [data-tool=style]').click()};
   $('#pfX',pg).onclick=exportJSON;$('#pfI',pg).onclick=()=>$('#jsonIn').click()}
 
+
+/* ======================= diario de lectura ======================= */
+const dayKey=(d=new Date())=>{const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`};
+function logTotals(){const m={};allBooks().forEach(b=>(b.log||[]).forEach(e=>{m[e.d]=(m[e.d]||0)+e.p}));return m}
+function streak(m){let n=0;const d=new Date();if(!m[dayKey(d)])d.setDate(d.getDate()-1);while(m[dayKey(d)]){n++;d.setDate(d.getDate()-1)}return n}
+function progressHTML(b){const tot=+b.pages||0,cur=b.curPage||0,pc=tot?Math.min(100,cur/tot*100):0;
+  return `<div class="prog"><div class="pb"><i style="width:${pc}%"></i></div><small>${tot?`Pág. ${cur} de ${tot} · ${Math.round(pc)}%`:`Pág. ${cur}`}</small></div>`}
+function openLog(b,after){let page=b.curPage||0;const today=dayKey();
+  const draw=()=>{const tot=+b.pages||0,todayP=(b.log||[]).filter(e=>e.d===today).reduce((a,e)=>a+e.p,0);
+    const sh=openSheet(`<div class="dhead">${thumb(b)}<div style="min-width:0"><h2 style="margin:0 0 4px">${esc(b.title)}</h2><div class="hint">${esc(b.author)}</div>${progressHTML(b)}</div></div>
+      <label class="lbl" style="text-align:center">¿Por qué página vas?</label>
+      <div class="bigv"><input type="number" id="lgP" inputmode="numeric" value="${page}" min="0"></div>
+      <div class="steps"><button data-d="-10">−10</button><button data-d="-1">−1</button><button data-d="1">+1</button><button data-d="10">+10</button><button data-d="25">+25</button></div>
+      <p class="hint" style="text-align:center" id="lgD"></p>
+      <div class="row2"><div><label class="lbl">Páginas del libro</label><input type="number" id="lgT" value="${tot||''}" placeholder="p. ej. 640"></div>
+        <div><label class="lbl">Hoy llevas</label><div class="hint" style="padding-top:10px;font-size:1rem">${todayP} páginas</div></div></div>
+      ${(b.log||[]).length?`<label class="lbl">Tus sesiones</label><div class="sess">${[...b.log].reverse().slice(0,8).map((e,i)=>`<div><span>${new Date(e.d+'T12:00').toLocaleDateString('es',{weekday:'short',day:'numeric',month:'short'})}</span><b>+${e.p} págs.</b><button data-i="${b.log.length-1-i}">✕</button></div>`).join('')}</div>`:''}
+      <div class="act"><button class="btn" id="lgC">Cancelar</button><button class="btn pri grow" id="lgOk">Guardar</button></div>`,{tall:true});
+    const inp=$('#lgP',sh),dl=$('#lgD',sh);const show=()=>{const d=page-(b.curPage||0);dl.textContent=d>0?`+${d} páginas hoy`:d<0?'Vas a corregir hacia atrás (no cuenta como lectura)':'';};show();
+    inp.oninput=()=>{page=Math.max(0,+inp.value||0);show()};
+    $('.steps',sh).onclick=e=>{const x=e.target.closest('button');if(!x)return;page=Math.max(0,page+ +x.dataset.d);if(+b.pages)page=Math.min(page,+b.pages);inp.value=page;show()};
+    $('#lgT',sh).onchange=e=>{b.pages=+e.target.value||'';save()};
+    if($('.sess',sh))$('.sess',sh).onclick=e=>{const x=e.target.closest('[data-i]');if(!x)return;const en=b.log.splice(+x.dataset.i,1)[0];b.curPage=Math.max(0,(b.curPage||0)-en.p);page=b.curPage;save();draw()};
+    $('#lgC',sh).onclick=closeSheet;
+    $('#lgOk',sh).onclick=()=>{const d=page-(b.curPage||0);if(d>0){b.log=b.log||[];const e=b.log.find(x=>x.d===today);if(e)e.p+=d;else b.log.push({d:today,p:d})}
+      b.curPage=page;if(b.status!=='leido')b.status='leyendo';if(!b.startedAt)b.startedAt=Date.now();save();closeSheet();
+      if(+b.pages&&page>=+b.pages){b.status='leido';b.readAt=Date.now();save();toast('¡Libro terminado! Lo marco como leído 🎉')}else if(d>0)toast(`+${d} páginas anotadas`);
+      refreshItem(b.id);after?after():refreshPage()}};
+  draw()}
+function openStartBook(){const L=allBooks().filter(b=>b.status!=='leyendo'&&b.status!=='leido').sort((a,b)=>(b.status==='pendiente')-(a.status==='pendiente'));
+  const sh=openSheet(`<h2>¿Qué empiezas a leer?</h2><div class="sbox" style="margin-bottom:8px"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="sbQ" placeholder="Buscar"></div><div class="blist" id="sbL"></div>`,{tall:true});
+  const draw=q=>{q=(q||'').toLocaleLowerCase('es');$('#sbL',sh).innerHTML=L.filter(b=>!q||(b.title+' '+b.author).toLocaleLowerCase('es').includes(q)).map(b=>`<button class="brow" data-id="${b.id}">${thumb(b)}<div class="bt"><b>${esc(b.title)}</b><small>${esc(b.author)}</small></div></button>`).join('')};draw();
+  $('#sbQ',sh).oninput=e=>draw(e.target.value);
+  $('#sbL',sh).onclick=e=>{const x=e.target.closest('[data-id]');if(!x)return;const b=findItem(x.dataset.id).item;b.status='leyendo';b.startedAt=Date.now();b.curPage=b.curPage||0;save();closeSheet();refreshPage();toast(`Empiezas «${b.title}»`)}}
+
+/* ---------- botón «atrás» del móvil ---------- */
+let guard=false,ignPop=0,syncT=null;
+function anyLayer(){return $('#crop').classList.contains('open')||$('#ov').classList.contains('open')||$('#viewer').classList.contains('open')||editing||page!=='biblioteca'}
+function syncGuard(){clearTimeout(syncT);syncT=setTimeout(()=>{const a=anyLayer();if(a&&!guard){history.pushState({g:1},'');guard=true}else if(!a&&guard){guard=false;ignPop++;history.back()}},0)}
+addEventListener('popstate',()=>{if(ignPop){ignPop--;return}guard=false;
+  if($('#crop').classList.contains('open'))cropCancel();else if($('#ov').classList.contains('open'))closeSheet();else if($('#viewer').classList.contains('open'))closeViewer();
+  else if(editing)setEditing(false);else if(page!=='biblioteca')goPage('biblioteca');syncGuard()});
+for(const n of ['openSheet','closeSheet','openViewer','closeViewer','setEditing','goPage']){const f=window[n];window[n]=function(...a){const r=f.apply(this,a);syncGuard();return r}}
+/* ---------- recortar fotos ---------- */
+let cropCancel=()=>{};
+function cropImage(data,kind){return new Promise(res=>{const C=$('#crop');C.innerHTML=`<div class="ct">Ajusta el recuadro al ${kind==='spine'?'lomo':kind==='edge'?'canto':kind==='back'?'contraportada':'libro'} arrastrando las esquinas</div><div class="cw"><img id="cImg" src="${data}"><div class="box" id="cBox"><i style="left:-11px;top:-11px" data-c="tl"></i><i style="right:-11px;top:-11px" data-c="tr"></i><i style="left:-11px;bottom:-11px" data-c="bl"></i><i style="right:-11px;bottom:-11px" data-c="br"></i></div></div>
+   <div class="cbar"><button class="btn" id="cAll">Usar entera</button><button class="btn pri" id="cOk">Recortar</button></div>`;C.classList.add('open');syncGuard();
+  const img=$('#cImg',C),box=$('#cBox',C),wrap=$('.cw',C);let r=null;
+  const place=()=>{const ib=img.getBoundingClientRect(),wb=wrap.getBoundingClientRect();box.style.left=(ib.left-wb.left+r.x*ib.width)+'px';box.style.top=(ib.top-wb.top+r.y*ib.height)+'px';box.style.width=r.w*ib.width+'px';box.style.height=r.h*ib.height+'px'};
+  img.onload=()=>{r=kind==='spine'?{x:.35,y:.04,w:.3,h:.92}:{x:.06,y:.04,w:.88,h:.92};place()};
+  let drag=null;wrap.onpointerdown=e=>{const c=e.target.dataset.c;drag={c:c||'move',x:e.clientX,y:e.clientY,r0:{...r}};wrap.setPointerCapture(e.pointerId)};
+  wrap.onpointermove=e=>{if(!drag)return;const ib=img.getBoundingClientRect(),dx=(e.clientX-drag.x)/ib.width,dy=(e.clientY-drag.y)/ib.height,o=drag.r0;let {x,y,w,h}=o;
+    if(drag.c==='move'){x=clamp(o.x+dx,0,1-o.w);y=clamp(o.y+dy,0,1-o.h)}
+    if(drag.c.includes('l')){x=clamp(o.x+dx,0,o.x+o.w-.04);w=o.x+o.w-x}if(drag.c.includes('r'))w=clamp(o.w+dx,.04,1-o.x);
+    if(drag.c.includes('t')){y=clamp(o.y+dy,0,o.y+o.h-.04);h=o.y+o.h-y}if(drag.c.includes('b'))h=clamp(o.h+dy,.04,1-o.y);r={x,y,w,h};place()};
+  wrap.onpointerup=wrap.onpointercancel=()=>drag=null;
+  const done=v=>{C.classList.remove('open');C.innerHTML='';cropCancel=()=>{};syncGuard();res(v)};cropCancel=()=>done(null);
+  $('#cAll',C).onclick=()=>done(data);
+  $('#cOk',C).onclick=()=>{const n=img.naturalWidth,m=img.naturalHeight,cv=document.createElement('canvas');cv.width=Math.round(r.w*n);cv.height=Math.round(r.h*m);
+    cv.getContext('2d').drawImage(img,r.x*n,r.y*m,r.w*n,r.h*m,0,0,cv.width,cv.height);done(cv.toDataURL('image/jpeg',.88))}})}
 /* ======================= arranque ======================= */
 let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{const o=PX;computeScale();if(o!==PX||true)render()},200)});
 (async()=>{
@@ -1663,9 +1892,11 @@ let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{const 
   let st=normalize(await Store.load());
   if(!st){const old=normalize(await IDB.get('state'));st=old||DEFAULT()}
   S=st;
+  if(S.settings.myLib2&&!S.settings.myLib3){S.settings.myLib3=true;const old=JSON.stringify(S);const n=restoreMissing();
+    if(n)setTimeout(()=>toast(`He repuesto ${n} libro${n>1?'s':''} que faltaban`,()=>{S=JSON.parse(old);S.settings.myLib3=true;save();render()}),600)}
   if(!S.settings.myLib2){const old=JSON.stringify(S),first=!S.settings.myLib1;
-    S.shelves=buildMyLibrary2(first?[]:allBooks());Object.assign(S.settings,{myLib1:true,myLib2:true,shelfW:62,shelfH:27,theme:'cuento'},themeSettings('cuento'));
-    setTimeout(()=>toast(first?'He colocado tus 63 libros':'Estantería actualizada con tus portadas',()=>{S=JSON.parse(old);S.settings.myLib1=true;S.settings.myLib2=true;save();render()}),400)}
+    S.shelves=buildMyLibrary2(first?[]:allBooks());Object.assign(S.settings,{myLib1:true,myLib2:true,myLib3:true,shelfW:62,shelfH:27,theme:'cuento'},themeSettings('cuento'));
+    setTimeout(()=>toast(first?'He colocado tus 63 libros':'Estantería actualizada con tus portadas',()=>{S=JSON.parse(old);S.settings.myLib1=true;S.settings.myLib2=true;S.settings.myLib3=true;save();render()}),400)}
   {const MP=window.MIS_PORTADAS||{};const MPL={};Object.keys(MP).forEach(k=>MPL[k.toLowerCase()]=k);
    allBooks().forEach(b=>{const k=MPL[(b.title||'').toLowerCase()];if(!k||(b.mpOff||[]).includes(MP[k].f))return;b.imgs=b.imgs||{};
      if(!b.imgs[MP[k].f]){b.imgs[MP[k].f]='mp:'+k;if(MP[k].f==='spine')b.spineArt=false}
