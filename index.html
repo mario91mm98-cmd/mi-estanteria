@@ -190,7 +190,7 @@ input,textarea,select{user-select:text;-webkit-user-select:text}
 
 /* portada 3D */
 .b3d{position:relative;transform-style:preserve-3d}
-.face{position:absolute;top:0;left:0;height:100%;overflow:hidden}
+.face{position:absolute;top:0;left:0;height:100%;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .face.front,.face.back{width:100%}
 .face.front{border-radius:1px 3px 3px 1px}
 .cvr{position:absolute;inset:0;background-color:var(--c);color:var(--t);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12% 10%}
@@ -1666,8 +1666,8 @@ function openDecos(){
     if(cat==='buscar'){g.innerHTML=`<div class="sbox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="oq" placeholder="candelabro, búho, calavera, globo…" value="${esc(openDecos.q||'')}"></div>
        <div class="chips" id="oqs" style="margin-top:8px">${['candelabro','farol','calavera','búho','dragón','globo terráqueo','reloj de arena','bola de cristal','planta','cofre','espada','corona'].map(t=>`<button class="chip sm">${t}</button>`).join('')}</div>
        <p class="hint" id="oh" style="margin:8px 0">Fotos reales con fondo transparente (de Wikimedia Commons). Toca una para ponerla en la balda.</p><div class="ogrid" id="og"></div>
-       <div class="gsteps"><b>¿Quieres una de Google?</b><ol><li>Pulsa <b>Abrir Google Imágenes</b> (ya busca fotos sin fondo).</li><li>Mantén pulsada la que te guste → <b>Copiar imagen</b>.</li><li>Vuelve y pulsa <b>Pegar objeto copiado</b>.</li></ol>
-        <div class="act" style="margin-top:6px"><button class="btn" id="oG">🔎 Abrir Google Imágenes</button><button class="btn pri" id="oP">📋 Pegar objeto copiado</button></div><div id="oZ"></div>
+       <div class="gsteps"><b>¿Quieres una de Google?</b><ol><li>Pulsa <b>Abrir Google Imágenes</b> (ya busca fotos sin fondo).</li><li>Mantén pulsada la que te guste → <b>Descargar imagen</b> (o <b>Copiar imagen</b>).</li><li>Vuelve y pulsa <b>Elegir descargada</b> (o <b>Pegar</b>).</li></ol>
+        <div class="act" style="margin-top:6px"><button class="btn" id="oG">🔎 Abrir Google Imágenes</button><button class="btn pri" id="oD">⬇️ Elegir descargada</button><button class="btn" id="oP">📋 Pegar</button></div><div id="oZ"></div>
         <label class="chips" style="margin-top:8px;align-items:center;gap:8px;font-size:.85rem"><input type="checkbox" id="oBg" checked style="width:auto"> Quitar el fondo blanco automáticamente</label></div>`;
       const run=async q=>{openDecos.q=q;if(!q)return;$('#oh',g).textContent='Buscando…';$('#og',g).innerHTML='';const L=await commonsSearch(q);if(!$('#og',g))return;
         $('#oh',g).textContent=L.length?'Toca una para ponerla en la balda:':'No he encontrado fotos. Prueba con otra palabra o cógela de Google.';
@@ -1676,6 +1676,7 @@ function openDecos(){
       $('#oqs',g).onclick=e=>{const c=e.target.closest('.chip');if(c){$('#oq',g).value=c.textContent;run(c.textContent)}};
       $('#og',g).onclick=e=>{const x=e.target.closest('[data-u]');if(x)addImg(x.dataset.u,false)};
       $('#oG',g).onclick=()=>window.open('https://www.google.com/search?tbm=isch&tbs=ic:trans&q='+encodeURIComponent(($('#oq',g).value||'objeto decorativo')+' png'),'_blank');
+      $('#oD',g).onclick=async()=>{const d=await pickImage(false);if(d)addImg(d,$('#oBg',g).checked)};
       $('#oP',g).onclick=async()=>{const v=await readClipboardImage();if(v)addImg(v,$('#oBg',g).checked);else toast('No hay ninguna imagen copiada')};
       $('#oZ',g).appendChild(pasteZone(v=>addImg(v,$('#oBg',g).checked)));
       if(openDecos.q)run(openDecos.q);else{$('#oh',g).textContent='Cargando sugerencias…';Promise.all(['candelabra','brass lantern','skull','antique globe','hourglass','owl figurine','crystal ball','potion bottle','old books','potted plant'].map(q=>commonsSearch(q).then(l=>l.slice(0,3)))).then(ls=>{const L=ls.flat();if(!$('#og',g))return;
@@ -1945,7 +1946,9 @@ function pasteZone(onImg){const z=document.createElement('div');z.className='pas
   z.addEventListener('paste',async e=>{e.preventDefault();const dt=e.clipboardData;const f=[...(dt.items||[])].find(i=>i.type.startsWith('image/'));
     if(f){const d=await fileToData(f.getAsFile(),1200);onImg(d);return}const tx=(dt.getData('text/plain')||'').trim();const html=dt.getData('text/html')||'';const m=html.match(/<img[^>]+src="([^"]+)"/i);
     const u=m?m[1]:(/^https?:\/\//.test(tx)?tx:null);if(u)onImg(u);else toast('No he encontrado ninguna imagen en lo que has copiado')});
-  z.addEventListener('input',()=>{z.innerHTML=''});return z}
+  z.addEventListener('input',async()=>{const im=z.querySelector('img');const tx=(z.textContent||'').trim();let u=im&&im.src;z.innerHTML='';
+    if(u&&u.startsWith('blob:')){try{const bl=await (await fetch(u)).blob();u=await fileToData(new File([bl],'p',{type:bl.type||'image/png'}),1200)}catch(e){}}
+    if(!u&&/^https?:\/\//.test(tx))u=tx;if(u)onImg(u)});return z}
 async function coverCandidates(b,max=12){const last=lastName(b.author),out=[],seen=new Set();const add=u=>{if(u&&!seen.has(u)){seen.add(u);out.push(u)}};coverRL=false;
   try{(await appleCovers(b)).slice(0,8).forEach(add)}catch(e){}
   const qs=[`intitle:${b.title.replace(/[:()¡!¿?]/g,' ')} inauthor:${last}`,`${b.title} ${last}`];if(b.isbn)qs.unshift('isbn:'+b.isbn);
@@ -1973,9 +1976,13 @@ function openCoverPicker(b,after,slot='cover'){const tok=openCoverPicker.tok=(op
       <div class="egrid" id="eG">${EDGE_PRESETS.map(([st,c,n],i)=>`<button data-i="${i}" class="${!b.imgs.edge&&(b.edgeStyle||'liso')===st&&b.edge===c?'sel':''}">${edgeHTML({...b,edgeStyle:st,edge:c,imgs:{}},20,92)}<span>${n}</span></button>`).join('')}</div>`:''}
     ${b.imgs[slot]&&slot!=='edge'?`<div class="curimg"><div style="background-image:url('${imgSrc(b.imgs[slot])}')" class="${slot==='spine'||slot==='edge'?'thin':''}"></div><button class="btn dng" id="ppDel">Quitar esta foto</button></div>`:''}
     <p class="hint" id="cpH">${slot==='cover'?'Buscando portadas en internet…':slot==='back'?'Buscando contraportadas…':slot==='spine'?'No hay ninguna web que ofrezca fotos de lomos, así que la forma de tener el lomo real es cogerlo de Google o hacerle una foto:':'¿Prefieres el canto real de tu libro? Hazle una foto o cógela de Google:'}</p><div class="cgrid" id="cpG"></div>
-    <div class="gsteps"><b>${slot==='cover'?'¿No está la buena? ':''}Cógela de Google:</b>
-      <ol><li>Pulsa <b>Abrir Google Imágenes</b>.</li><li>Toca la imagen que quieras y <b>mantenla pulsada</b> → <b>Copiar imagen</b>.</li><li>Vuelve aquí y pulsa <b>Pegar ${nm.toLowerCase()} copiad${slot==='spine'||slot==='edge'?'o':'a'}</b>. Luego ajustas el recuadro.</li></ol>
-      <div class="act" style="margin-top:6px"><button class="btn" id="cpWeb">🔎 Abrir Google Imágenes</button><button class="btn pri" id="cpPaste">📋 Pegar ${nm.toLowerCase()} copiad${slot==='spine'||slot==='edge'?'o':'a'}</button></div><div id="cpZ"></div></div>
+    <div class="gsteps"><b>${slot==='cover'?'¿No está la buena? ':''}Cógela de Google (la forma más segura):</b>
+      <ol><li>Pulsa <b>Abrir Google Imágenes</b>.</li><li>Toca la imagen para verla en grande, <b>mantenla pulsada</b> → <b>Descargar imagen</b>.</li><li>Vuelve aquí y pulsa <b>Elegir la imagen descargada</b> (sale la primera en «Recientes» o «Descargas»). Luego ajustas el recuadro.</li></ol>
+      <div class="act" style="margin-top:6px"><button class="btn" id="cpWeb">🔎 Abrir Google Imágenes</button><button class="btn pri" id="cpDl">⬇️ Elegir la imagen descargada</button></div>
+      <details style="margin-top:10px"><summary style="cursor:pointer;color:var(--muted)">Otra forma: copiar y pegar</summary>
+        <p class="hint" style="margin:6px 0">Mantén pulsada la imagen → <b>Copiar imagen</b> (o <b>Copiar dirección de la imagen</b>) y pulsa el botón, o pégala en el recuadro.</p>
+        <div class="act"><button class="btn" id="cpPaste">📋 Pegar ${nm.toLowerCase()} copiad${slot==='spine'||slot==='edge'?'o':'a'}</button></div><div id="cpZ"></div>
+        <input type="url" id="cpU" placeholder="…o pega aquí el enlace de la imagen" style="margin-top:8px;width:100%"></details></div>
     <div class="menu" style="margin-top:12px"><button id="cpGal">Elegir una imagen de la galería <span>🖼️</span></button><button id="cpCam">Hacerle una foto <span>📷</span></button></div>`,{tall:true});
   const fin=()=>{toast(`${nm} ${slot==="spine"||slot==="edge"?"puesto":"puesta"}`);closeSheet();after&&after()};
   const useImg=async v=>{if(!v)return;toast('Poniendo imagen…');let d=v.startsWith('data:')?v:await urlToData(v);if(!d)return toast('No he podido abrir esa imagen. Prueba con «Copiar imagen» en vez del enlace');
@@ -1989,7 +1996,9 @@ function openCoverPicker(b,after,slot='cover'){const tok=openCoverPicker.tok=(op
     $('#eMode',sh).onchange=e=>{if(e.target.checked){b.mode='edge'}else if(b.mode==='edge')b.mode='spine';save();refreshItem(b.id,true)}}
   if($('#ppDel',sh))$('#ppDel',sh).onclick=()=>{if(String(b.imgs[slot]).startsWith('mp:'))b.mpOff=[...(b.mpOff||[]),slot];delete b.imgs[slot];save();refreshItem(b.id);openCoverPicker(b,after,slot)};
   $('#cpZ',sh).appendChild(pasteZone(useImg));
-  $('#cpPaste',sh).onclick=async()=>{const v=await readClipboardImage();if(v)useImg(v);else toast('No hay ninguna imagen copiada. Mantén pulsada la imagen en Google → «Copiar imagen»')};
+  $('#cpPaste',sh).onclick=async()=>{const v=await readClipboardImage();if(v)useImg(v);else toast('Tu móvil no me deja leer lo copiado. Usa «Descargar imagen» y «Elegir la imagen descargada»')};
+  $('#cpDl',sh).onclick=()=>pick(false);
+  $('#cpU',sh).onchange=e=>{const u=e.target.value.trim();if(/^(https?:|data:image)/.test(u))useImg(u);else if(u)toast('Eso no parece un enlace de imagen')};
   const fill=list=>{const G=$('#cpG',sh);if(!G||openCoverPicker.tok!==tok||!$('#ov').classList.contains('open'))return;if(slot==='cover'||slot==='back')$('#cpH',sh).textContent=list.length?`Toca la ${nm.toLowerCase()} correcta:`:(coverRL?'Google ha limitado las búsquedas un rato. Usa las opciones de abajo.':`No he encontrado ${slot==='back'?'contraportadas':'portadas'} en internet. Usa las opciones de abajo.`);
     G.innerHTML=list.map(u=>`<button style="background-image:url('${u}')" data-u="${u}"></button>`).join('');
     G.onclick=async e=>{const x=e.target.closest('[data-u]');if(!x)return;toast('Poniendo imagen…');await setSlotImg(b,slot,x.dataset.u);fin()}};
