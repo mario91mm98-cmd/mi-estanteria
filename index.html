@@ -1836,16 +1836,82 @@ async function fetchInfo(b){
       if(!b.desc&&d.key){const w=await (await fetch(`https://openlibrary.org${d.key}.json`)).json();const ds=typeof w.description==='string'?w.description:(w.description&&w.description.value);if(ds){b.desc=ds.replace(/\(\[source\][^)]*\)/g,'').trim();changed=true}}}}catch(e){}}
   save();return changed}
 function starsAvg(v){const p=clamp(v/5*100,0,100);return `<span class="st5" style="--p:${p}%">★★★★★</span>`}
+/* fichas de tus libros: páginas aproximadas (edición española habitual) y sinopsis breve escrita para la app */
+const BOOK_INFO={
+'juego de tronos':[800,'En los Siete Reinos los veranos y los inviernos duran años, y se acerca uno muy largo. Eddard Stark deja el norte para servir al rey Robert como su Mano y se ve atrapado en las intrigas de la corte, mientras al otro lado del mar la última heredera de los Targaryen planea recuperar el trono y en el Muro algo antiguo despierta.'],
+'choque de reyes':[880,'Tras la muerte del rey, varios pretendientes reclaman el Trono de Hierro y Poniente se desangra en la guerra de los cinco reyes. Los Stark, separados y en peligro, luchan por sobrevivir; Tyrion intenta gobernar Desembarco del Rey y un cometa rojo cruza el cielo como un mal presagio.'],
+'tormenta de espadas':[1150,'La guerra entra en su fase más cruel: las alianzas se rompen, los ejércitos se desgastan y nadie está a salvo. Mientras en el sur se celebran bodas y juicios, más allá del Muro los salvajes avanzan y Daenerys reúne un ejército en las ciudades esclavistas.'],
+'festín de cuervos':[870,'Con la guerra aparentemente terminada, los vencedores intentan gobernar un reino en ruinas. Cersei maniobra para conservar el poder, Brienne busca a la hija perdida de Catelyn Stark y en Dorne y en las Islas del Hierro surgen nuevas ambiciones.'],
+'danza de dragones':[1150,'Jon Nieve, al mando de la Guardia de la Noche, debe preparar el Muro para lo que llega del norte. Al otro lado del mar, Daenerys intenta gobernar Meereen con unos dragones cada vez más difíciles de controlar, y Tyrion, huido de Poniente, busca un nuevo destino.'],
+'el camino de los reyes':[1200,'En el mundo de Roshar, azotado por altas tormentas, la guerra contra los parshendi se libra en las Llanuras Quebradas. Kaladin, un soldado convertido en esclavo, Shallan, una joven estudiosa con un plan desesperado, y el alto príncipe Dalinar, perseguido por visiones, cruzan sus caminos mientras antiguos poderes regresan.'],
+'palabras radiantes':[1250,'Shallan llega a las Llanuras Quebradas y descubre el secreto de la ciudad perdida de Urithiru. Kaladin se debate entre su lealtad a Dalinar y su pasado, mientras los parshendi preparan algo que puede cambiar el mundo para siempre.'],
+'danzante del filo':[300,'Lift, una joven ladrona con poderes extraordinarios, llega a la ciudad de Yeddaw perseguida por un implacable Rompedor del Cielo. Una novela corta del Archivo de las Tormentas, entre Palabras radiantes y Juramentada.'],
+'juramentada':[1250,'La Tormenta Eterna ha desatado a los Portadores del Vacío y la humanidad debe unirse en la torre de Urithiru. Dalinar intenta formar una coalición de reinos mientras se enfrenta a los recuerdos de su violento pasado.'],
+'el ritmo de la guerra':[1300,'Tras un año de guerra contra los cantores y sus dioses, la coalición de Dalinar está estancada. La torre de Urithiru se convierte en el centro del conflicto, y Kaladin, Navani y Venli tienen papeles clave en una lucha por el corazón de la torre.'],
+'esquirla del amanecer':[220,'Rysn, una comerciante que ya no puede caminar, recibe un encargo peligroso: viajar a la misteriosa isla de Akinah. Novela corta del Archivo de las Tormentas que cuenta qué esconde ese lugar.'],
+'viento y verdad':[1300,'Quedan diez días para el enfrentamiento de campeones que decidirá el destino de Roshar. Dalinar se prepara para el duelo contra Odium mientras Kaladin, Shallan, Adolin y el resto se enfrentan a sus pruebas finales. Cierre del primer arco del Archivo de las Tormentas.'],
+'nacidos de la bruma: el imperio final':[680,'Durante mil años ha caído ceniza del cielo y el Lord Legislador gobierna como un dios inmortal. Kelsier, un ladrón con poderes de alomancia, recluta a Vin, una joven de la calle, para el golpe más audaz jamás planeado: derribar el Imperio Final.'],
+'el pozo de la ascensión':[780,'El imperio ha caído, pero conservar la libertad es más difícil que conseguirla. Elend intenta gobernar Luthadel mientras tres ejércitos la asedian, y Vin investiga una amenaza antigua ligada a la bruma y al Pozo de la Ascensión.'],
+'el héroe de las eras':[780,'La bruma mata, la ceniza cubre el mundo y una fuerza antigua quiere destruirlo todo. Vin y Elend buscan los últimos depósitos del Lord Legislador y la verdad sobre el Héroe de las Eras. Cierre de la primera trilogía de Nacidos de la bruma.'],
+'aleación de ley':[350,'Trescientos años después, el mundo de Scadrial vive una era de ferrocarriles y pistolas. Wax, un vigilante que dejó las tierras salvajes, vuelve a la ciudad y se ve obligado a investigar una serie de robos con su peculiar compañero Wayne.'],
+'sombras de identidad':[400,'Wax y Wayne investigan el asesinato de un sacerdote y unos crímenes que agitan la ciudad de Elendel, mientras un ser con muchos rostros complica todo aún más.'],
+'brazales de duelo':[440,'Wax y Wayne viajan para encontrar un artefacto legendario, los Brazales de Duelo, que podría otorgar poderes inmensos, en una carrera contra una sociedad secreta.'],
+'el metal perdido':[560,'Wax, ahora senador, persigue a la organización que amenaza con destruir Elendel. Con la ayuda de Wayne, Marasi y Steris, y con fuerzas divinas en juego, se enfrenta a la mayor amenaza de la segunda era de Nacidos de la bruma.'],
+'los asesinos del emperador':[1150,'Roma, año 96: el emperador Domiciano reina con terror y una conspiración se gesta en palacio. La novela narra la caída de los Flavios y el ascenso de Marco Ulpio Trajano, el primer emperador nacido fuera de Italia.'],
+'circo máximo: la ira de trajano':[1100,'Trajano emprende la conquista de la Dacia mientras en Roma las carreras de cuadrigas del Circo Máximo, las intrigas y un amor prohibido se cruzan con el destino del imperio.'],
+'la legión perdida':[1200,'Trajano quiere llegar más lejos que nadie y se lanza contra el Imperio parto, siguiendo el rastro de las legiones de Craso perdidas en Oriente. Cierre de la trilogía de Trajano.'],
+'africanus: el hijo del cónsul':[700,'Roma lucha contra Cartago y Aníbal parece invencible. La novela sigue la juventud de Publio Cornelio Escipión, el joven que acabaría siendo conocido como Africanus.'],
+'las legiones malditas':[900,'Escipión recibe el mando de las legiones derrotadas y despreciadas de Cannae y con ellas se prepara para llevar la guerra a África y enfrentarse a Aníbal.'],
+'la traición de roma':[1200,'Vencedor de Aníbal, Escipión debe enfrentarse ahora a sus enemigos dentro de Roma, encabezados por Catón. Cierre de la trilogía de Escipión.'],
+'roma soy yo':[700,'Roma, 77 a. C.: un joven Julio César acepta acusar a un senador corrupto y poderoso en un juicio que nadie quiere asumir. El comienzo de la serie sobre la vida de César.'],
+'maldita roma':[800,'Tras el juicio, César debe salir de Roma, se forma en Oriente, se enfrenta a piratas y conspiraciones y empieza su ascenso político. Segunda entrega de la serie de Julio César.'],
+'los tres mundos':[800,'Continúa la vida de Julio César en una nueva etapa de poder y alianzas, mientras Roma se encamina hacia la guerra civil. Tercera entrega de la serie de César.'],
+'la sombra de los dioses':[650,'En una tierra nórdica donde los dioses murieron en una gran guerra, sus huesos aún dan poder. Orka, una madre que oculta su pasado; Varg, un esclavo huido; y Elvar, una guerrera que busca gloria, se ven arrastrados a un conflicto en el que los dioses podrían volver.'],
+'el hambre de los dioses':[700,'Orka busca a su hijo secuestrado, Varg aprende lo que significa pertenecer a los Sangrejurada y Elvar se ve atrapada en la ambición de un jarl que quiere despertar a un dios dragón.'],
+'la furia de los dioses':[700,'Los dioses han despertado y la guerra llega a Vigrið. Orka, Varg y Elvar se enfrentan a la batalla final en el cierre de la saga de los Sangrejurada.'],
+'alas de sangre':[730,'Violet Sorrengail, destinada a ser escriba, es obligada a ingresar en el Colegio de Guerra de Basgiath para formarse como jinete de dragones. Allí la debilidad se paga con la muerte, los dragones eligen a sus jinetes y su mayor enemigo puede ser también lo que más desea.'],
+'alas de hierro':[880,'Tras descubrir lo que se oculta tras los muros de Basgiath, Violet debe sobrevivir a su segundo año mientras la guerra se acerca y la confianza entre los jinetes se rompe.'],
+'alas de ónix':[880,'Violet y sus aliados buscan la manera de frenar a los venin mientras la guerra se extiende y cada decisión tiene un precio. Tercera entrega del Empíreo.'],
+'el águila del imperio':[440,'Año 42 d. C. El joven Cato llega a la Segunda Legión en Germania y queda a las órdenes del veterano centurión Macro. Juntos se verán envueltos en una conspiración durante los preparativos para invadir Britania. Primera aventura de Macro y Cato.'],
+'roma vincit':[400,'La invasión de Britania ha comenzado. Macro y Cato combaten contra las tribus britanas en una campaña dura mientras se enfrentan a la traición dentro de las propias filas romanas.'],
+'las garras del águila':[400,'En Britania, Macro y Cato deben rescatar a la familia de un general capturada por los druidas antes de que sea sacrificada.'],
+'los lobos del águila':[400,'Macro y Cato entrenan a soldados nativos aliados de Roma mientras crece la rebelión de las tribus contra un rey cliente.'],
+'el águila abandona britania':[400,'Tras una derrota, Macro y Cato son injustamente condenados y deben demostrar su valía en una misión casi suicida en Britania.'],
+'la profecía del águila':[400,'Macro y Cato reciben el encargo de recuperar unos rollos de gran valor robados por piratas en el Adriático.'],
+'el águila en el desierto':[400,'Macro y Cato viajan a Judea, donde una rebelión amenaza la frontera oriental del imperio.'],
+'centurión':[420,'Macro y Cato, destinados en Siria, se enfrentan a una amenaza parta y a la traición de un aliado de Roma.'],
+'el gladiador':[400,'Tras un naufragio en Creta, Macro y Cato se encuentran en medio de una revuelta de esclavos liderada por un gladiador.'],
+'la legión':[420,'En Egipto, Macro y Cato persiguen a un renegado que ataca las rutas del Nilo con un ejército de gladiadores.'],
+'pretoriano':[420,'De vuelta en Roma, Macro y Cato se infiltran en la Guardia Pretoriana para descubrir una conspiración contra el emperador Claudio.'],
+'cuervos sangrientos':[420,'Britania de nuevo: Macro y Cato se enfrentan a la brutalidad de una cohorte romana, los Cuervos Sangrientos, y a la resistencia de Carataco.'],
+'hermanos de sangre':[420,'Macro y Cato luchan para acabar definitivamente con Carataco mientras las intrigas de Roma les persiguen en Britania.'],
+'britania':[420,'La lucha en Britania continúa con la persecución de los últimos rebeldes en tierras de los druidas.'],
+'invictus':[420,'Macro y Cato son enviados a Hispania para combatir a unos rebeldes que amenazan las minas del imperio.'],
+'los días del césar':[440,'Tras la muerte de Claudio, Nerón llega al poder y Roma se llena de intrigas. Cato se ve envuelto en la lucha entre las facciones de palacio.'],
+'la sangre de roma':[420,'Macro y Cato viajan a Armenia para ayudar a restaurar a un rey aliado de Roma frente a la amenaza parta.'],
+'traidores a roma':[420,'En la frontera oriental, Macro y Cato investigan la traición de un oficial romano mientras Partia se prepara para la guerra.'],
+'la exiliada del emperador':[420,'Cato escolta a una amante del emperador Nerón al exilio en Cerdeña, en una misión que se complica con la aparición de bandidos y conspiradores.'],
+'el honor de roma':[420,'Macro y Cato se enfrentan a una nueva prueba en la que su honor como soldados de Roma está en juego.'],
+'muerte al emperador':[420,'Britania arde en la rebelión de Boudica y Macro y Cato deben resistir con la provincia al borde del desastre.'],
+'rebelión':[420,'La rebelión de Boudica estalla con toda su fuerza y Macro y Cato luchan por sobrevivir y salvar la provincia de Britania.'],
+'la venganza de roma':[420,'Roma responde a la rebelión y Macro y Cato toman parte en una campaña en la que la venganza y la lealtad chocan.'],
+'imperio de fuego azul':[0,''],'imperio en llamas':[0,''],'imperio de ruinas':[0,''],
+'promesa de sangre':[700,'En un mundo donde los magos de la pólvora sacan poder de la pólvora, el mariscal Tamas da un golpe de estado contra el rey de Adro. Mientras él combate a los enemigos de la nueva república, el inspector Adamat investiga una traición y una amenaza divina se cierne sobre el país.'],
+'la campaña escarlata':[750,'La guerra con Kez se complica: Tamas queda atrapado tras las líneas enemigas, su hijo Taniel lucha en el frente y Adamat busca a su familia secuestrada.'],
+'la república de otoño':[780,'Tamas vuelve a una Adopest llena de enemigos y traiciones mientras un dios camina sobre la tierra. Cierre de la trilogía de Los magos de la pólvora.']};
+function bookInfo(b){const k=(b.title||'').toLowerCase().trim();if(BOOK_INFO[k])return BOOK_INFO[k];const k2=Object.keys(BOOK_INFO).find(x=>k&&(x.startsWith(k)||k.startsWith(x)));return k2?BOOK_INFO[k2]:null}
+function applyInfo(b){const i=bookInfo(b);if(!i)return false;let ch=false;if(!b.pages&&i[0]){b.pages=i[0];b.pagesApprox=true;ch=true}if(!b.desc&&i[1]){b.desc=i[1];ch=true}return ch}
 function openDetails(b){
   const draw=()=>{
     const cover=imgSrc(b.imgs.cover);
     const sh=openSheet(`<div class="dhead"><div class="th" style="background-color:${b.color};${cover?`background-image:url('${cover}')`:''}"></div><div style="min-width:0">
       <h2 style="margin:0 0 4px">${esc(b.title)}</h2><div class="hint" style="font-size:.95rem">${esc(b.author)}</div>
-      ${b.saga?`<div style="color:var(--gold);font-size:.9rem;margin-top:4px">${esc(b.saga)}${b.sagaN?' · #'+esc(b.sagaN):''}</div>`:''}</div></div>
+      ${b.saga?`<div style="color:var(--gold);font-size:.9rem;margin-top:4px">${esc(b.saga)}${b.sagaN?' · #'+esc(b.sagaN):''}</div>`:''}
+      <div style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:.95rem">📖 <input type="number" id="dPg" value="${b.pages||''}" placeholder="?" style="width:78px;padding:4px 8px"> páginas${b.pagesApprox?' <span class="hint">(aprox.)</span>':''}</div></div></div>
       <label class="lbl">Valoración de los lectores</label>
       <div class="avg" id="avgBox">${b.avgRating?`${starsAvg(b.avgRating)}<b>${String(b.avgRating).replace('.',',')}</b><span class="hint">${b.ratingsCount?`(${b.ratingsCount} valoraciones · ${b.ratingSrc})`:`(${b.ratingSrc})`}</span>`:`<span class="hint">${b.infoTried?'No he encontrado valoraciones de este libro.':'Buscando…'}</span>`}</div>
       <label class="lbl">Sinopsis</label>
-      ${b.desc?`<div class="syn clip" id="syn">${esc(b.desc)}</div><button class="linkbtn" id="more">Leer más</button>`:`<p class="hint">${b.infoTried?'No he encontrado sinopsis. Puedes escribirla tú:':'Buscando sinopsis…'}</p>`}
+      ${b.desc?`<div class="syn clip" id="syn">${esc(b.desc)}</div><button class="linkbtn" id="more">Leer más</button> <button class="linkbtn" id="edSyn">✏️ Editar</button>`:`<p class="hint">${b.infoTried?'No he encontrado sinopsis. Puedes escribirla tú:':'Buscando sinopsis…'}</p>`}
       ${b.infoTried&&!b.desc?`<textarea id="ownDesc" placeholder="Sinopsis del libro"></textarea>`:''}
       <label class="lbl">Progreso de lectura</label>${progressHTML(b)}<button class="btn" id="dLog" style="margin-top:8px">📖 Anotar páginas leídas</button>
       <label class="lbl">Tu valoración</label><div class="stars" id="myR">${[1,2,3,4,5].map(i=>`<span data-v="${i}" class="${i<=b.rating?'on':''}">★</span>`).join('')}</div>
@@ -1855,6 +1921,8 @@ function openDetails(b){
       <div class="act"><button class="btn" id="reInfo">↻ Volver a buscar datos</button><button class="btn pri grow" id="dOk2">Listo</button></div>`,{tall:true});
     if($('#more',sh))$('#more',sh).onclick=e=>{$('#syn',sh).classList.toggle('clip');e.target.textContent=$('#syn',sh).classList.contains('clip')?'Leer más':'Leer menos'};
     if($('#ownDesc',sh))$('#ownDesc',sh).onchange=e=>{b.desc=e.target.value.trim();save()};
+    $('#dPg',sh).onchange=e=>{const v=parseInt(e.target.value);b.pages=v>0?v:'';b.pagesApprox=false;save()};
+    if($('#edSyn',sh))$('#edSyn',sh).onclick=()=>{const t=document.createElement('textarea');t.value=b.desc;t.style.minHeight='140px';$('#syn',sh).replaceWith(t);$('#more',sh).remove();$('#edSyn',sh).remove();t.focus();t.onchange=()=>{b.desc=t.value.trim();save()}};
     $('#myR',sh).onclick=e=>{const v=+e.target.dataset.v;if(!v)return;b.rating=b.rating===v?0:v;$$('#myR span',sh).forEach(x=>x.classList.toggle('on',+x.dataset.v<=b.rating));save()};
     let rt;$('#myRev',sh).oninput=e=>{b.review=e.target.value;clearTimeout(rt);rt=setTimeout(save,400)};
     $('#dSt2',sh).onchange=e=>{b.status=e.target.value;if(b.status==='leido'&&!b.readAt)b.readAt=Date.now();save();refreshItem(b.id)};
@@ -2097,8 +2165,9 @@ function pageStats(pg){const all=allBooks(),read=all.filter(b=>b.status==='leido
      <p>📏 Puestos en fila, tus libros ocupan <b>${(cm/100).toFixed(2).replace('.',',')} m</b> de estantería.</p>
      ${tallest?`<p>🗼 El más alto es <b>${esc(tallest.title)}</b> (${fmt(tallest.h)} cm).</p>`:''}
      <p>📚 Tienes <b>${new Set(all.map(b=>b.author).filter(Boolean)).size}</b> autores distintos${all.some(b=>b.saga)?` y <b>${new Set(all.map(b=>b.saga).filter(Boolean)).size}</b> sagas`:''}.</p></div></section>`}
+const APP_VER='3-10';
 function pageProfile(pg){const s=S.settings;
-  pg.innerHTML=`<div class="phead"><h1>Perfil</h1><div class="sub">Tus ajustes</div></div>
+  pg.innerHTML=`<div class="phead"><h1>Perfil</h1><div class="sub">Tus ajustes · versión ${APP_VER}</div></div>
    <section class="form"><label class="lbl">Tu nombre</label><input type="text" id="pfN" value="${esc(s.name||'')}" placeholder="Cómo quieres que te salude">
    <label class="lbl">Nombre de la biblioteca</label><input type="text" id="pfT" value="${esc(s.title||'')}">
    <label class="lbl">Reto de lectura de este año</label><div class="ruler"><div class="val"><span id="pfGv">${s.goal||12}</span><small>libros</small></div><input type="range" id="pfG" min="1" max="100" value="${s.goal||12}"></div></section>
@@ -2177,6 +2246,7 @@ let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{const 
   let st=normalize(await Store.load());
   if(!st){const old=normalize(await IDB.get('state'));st=old||DEFAULT()}
   S=st;
+  allBooks().forEach(b=>applyInfo(b));
   if(!S.settings.myLib4){S.settings.myLib4=true;const ES={'a clash of kings':'Choque de reyes','a storm of swords':'Tormenta de espadas','a feast for crows':'Festín de cuervos'};
     allBooks().forEach(b=>{const n=ES[(b.title||'').toLowerCase()];if(!n)return;b.title=n;if(String(b.imgs.spine||'').startsWith('mp:'))delete b.imgs.spine;
       if(b.imgs.cover&&!b.coverMine)delete b.imgs.cover;b.autoCover=true;b.coverTries=0;b.infoTried=false;b.desc='';b.style='rotulo';b.font='clasica';b.binding='dura';b.finish='papel';b.text='';b.spineAuthor='Martin,\nGeorge R. R.';b.caps=false;b.italic=false;b.authorPos='b'})}
@@ -2185,6 +2255,7 @@ let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{const 
   if(!S.settings.myLib2){const old=JSON.stringify(S),first=!S.settings.myLib1;
     S.shelves=buildMyLibrary2(first?[]:allBooks());Object.assign(S.settings,{myLib1:true,myLib2:true,myLib3:true,myLib4:true,shelfW:62,shelfH:27,theme:'cuento'},themeSettings('cuento'));
     setTimeout(()=>toast(first?'He colocado tus 63 libros':'Estantería actualizada con tus portadas',()=>{S=JSON.parse(old);S.settings.myLib1=true;S.settings.myLib2=true;S.settings.myLib3=true;save();render()}),400)}
+  allBooks().forEach(b=>applyInfo(b));
   {const MP=window.MIS_PORTADAS||{};const MPL={};Object.keys(MP).forEach(k=>MPL[k.toLowerCase()]=k);
    allBooks().forEach(b=>{const k=MPL[(b.title||'').toLowerCase()];if(!k||(b.mpOff||[]).includes(MP[k].f))return;b.imgs=b.imgs||{};
      if(!b.imgs[MP[k].f]){b.imgs[MP[k].f]='mp:'+k;if(MP[k].f==='spine')b.spineArt=false}
@@ -2194,7 +2265,8 @@ let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{const 
   setTimeout(autoCovers,6500);
   $('#loading').remove();
   if(document.fonts)document.fonts.ready.then(()=>render());
-  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+  try{const pv=localStorage.getItem('appVer');if(pv!==APP_VER){localStorage.setItem('appVer',APP_VER);setTimeout(()=>toast('App actualizada · versión '+APP_VER),1500)}}catch(e){}
 })();
 </script>
 </body>
