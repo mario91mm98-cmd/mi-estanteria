@@ -1964,7 +1964,7 @@ async function backCandidates(b){const out=[];try{const r=await fetch(`https://o
     (e.entries||[]).forEach(ed=>(ed.covers||[]).slice(1).forEach(c=>{if(c>0)out.push(`https://covers.openlibrary.org/b/id/${c}-L.jpg`)}))}}catch(e){}return [...new Set(out)].slice(0,16)}
 async function setSlotImg(b,slot,v){if(slot==='cover')return setCoverFrom(b,v);let d=v.startsWith('data:')?v:await urlToData(v);if(!d)return;
   b.imgs[slot]=d.startsWith('data:')?await Store.putImg(d):d;if(b.mpOff)b.mpOff=b.mpOff.filter(x=>x!==slot);if(slot==='spine'){b.spineArt=false}save();refreshItem(b.id)}
-function openCoverPicker(b,after,slot='cover'){
+function openCoverPicker(b,after,slot='cover'){const tok=openCoverPicker.tok=(openCoverPicker.tok||0)+1;
   const nm=SLOTN[slot],q={cover:'portada libro',spine:'lomo libro',back:'contraportada libro',edge:'canto libro'}[slot];
   const sh=openSheet(`<div class="seg" id="ppS" style="margin:0 auto 10px">${Object.entries(SLOTN).map(([k,n])=>`<button data-k="${k}" class="${k===slot?'sel':''}">${n}</button>`).join('')}</div>
     <h2>${nm} de «${esc(b.title)}»</h2>
@@ -1977,12 +1977,12 @@ function openCoverPicker(b,after,slot='cover'){
       <ol><li>Pulsa <b>Abrir Google Imágenes</b>.</li><li>Toca la imagen que quieras y <b>mantenla pulsada</b> → <b>Copiar imagen</b>.</li><li>Vuelve aquí y pulsa <b>Pegar ${nm.toLowerCase()} copiad${slot==='spine'||slot==='edge'?'o':'a'}</b>. Luego ajustas el recuadro.</li></ol>
       <div class="act" style="margin-top:6px"><button class="btn" id="cpWeb">🔎 Abrir Google Imágenes</button><button class="btn pri" id="cpPaste">📋 Pegar ${nm.toLowerCase()} copiad${slot==='spine'||slot==='edge'?'o':'a'}</button></div><div id="cpZ"></div></div>
     <div class="menu" style="margin-top:12px"><button id="cpGal">Elegir una imagen de la galería <span>🖼️</span></button><button id="cpCam">Hacerle una foto <span>📷</span></button></div>`,{tall:true});
-  const fin=()=>{toast(`${nm} puesta`);closeSheet();after&&after()};
+  const fin=()=>{toast(`${nm} ${slot==="spine"||slot==="edge"?"puesto":"puesta"}`);closeSheet();after&&after()};
   const useImg=async v=>{if(!v)return;toast('Poniendo imagen…');let d=v.startsWith('data:')?v:await urlToData(v);if(!d)return toast('No he podido abrir esa imagen. Prueba con «Copiar imagen» en vez del enlace');
     if(d.startsWith('data:')){const c=await cropImage(d,slot);if(!c)return;d=c}await setSlotImg(b,slot,d);if(slot==='spine'&&b.mode==='cover'){}fin()};
   $('#ppS',sh).onclick=e=>{const x=e.target.closest('[data-k]');if(x)openCoverPicker(b,after,x.dataset.k)};
   if(slot==='edge'){const show=()=>{$('#epv',sh).innerHTML=edgeHTML(b,34,150);$('#eName',sh).textContent=b.imgs.edge?'Foto propia':EDGE_ST[b.edgeStyle||'liso']};
-    const apply=()=>{if(b.imgs.edge){if(String(b.imgs.edge).startsWith('mp:'))b.mpOff=[...(b.mpOff||[]),'edge'];delete b.imgs.edge}const full=$('#eMode',sh).checked&&b.mode!=='edge';if($('#eMode',sh).checked)b.mode='edge';show();save();refreshItem(b.id,full)};
+    const apply=()=>{if(b.imgs.edge){if(String(b.imgs.edge).startsWith('mp:'))b.mpOff=[...(b.mpOff||[]),'edge'];delete b.imgs.edge}const full=$('#eMode',sh).checked&&b.mode!=='edge';if($('#eMode',sh).checked)b.mode='edge';show();save();refreshItem(b.id,full);if(V&&V.b===b&&$('#viewer').classList.contains('open'))openViewer(b)};
     $('#eG',sh).onclick=e=>{const x=e.target.closest('[data-i]');if(!x)return;const [st,c,n]=EDGE_PRESETS[+x.dataset.i];b.edgeStyle=st;b.edge=c;$('#eCol',sh).value=c;$$('#eG button',sh).forEach(y=>y.classList.toggle('sel',y===x));apply();
       toast($('#eMode',sh).checked?`Canto «${n}» puesto · el libro se ve de canto`:`Canto «${n}» puesto`)};
     $('#eCol',sh).oninput=e=>{b.edge=e.target.value;if(['dorado','plateado','antiguo'].includes(b.edgeStyle))b.edgeStyle='tintado';$$('#eG button',sh).forEach(y=>y.classList.remove('sel'));apply()};
@@ -1990,7 +1990,7 @@ function openCoverPicker(b,after,slot='cover'){
   if($('#ppDel',sh))$('#ppDel',sh).onclick=()=>{if(String(b.imgs[slot]).startsWith('mp:'))b.mpOff=[...(b.mpOff||[]),slot];delete b.imgs[slot];save();refreshItem(b.id);openCoverPicker(b,after,slot)};
   $('#cpZ',sh).appendChild(pasteZone(useImg));
   $('#cpPaste',sh).onclick=async()=>{const v=await readClipboardImage();if(v)useImg(v);else toast('No hay ninguna imagen copiada. Mantén pulsada la imagen en Google → «Copiar imagen»')};
-  const fill=list=>{const G=$('#cpG',sh);if(!G)return;if(slot==='cover'||slot==='back')$('#cpH',sh).textContent=list.length?`Toca la ${nm.toLowerCase()} correcta:`:(coverRL?'Google ha limitado las búsquedas un rato. Usa las opciones de abajo.':`No he encontrado ${slot==='back'?'contraportadas':'portadas'} en internet. Usa las opciones de abajo.`);
+  const fill=list=>{const G=$('#cpG',sh);if(!G||openCoverPicker.tok!==tok||!$('#ov').classList.contains('open'))return;if(slot==='cover'||slot==='back')$('#cpH',sh).textContent=list.length?`Toca la ${nm.toLowerCase()} correcta:`:(coverRL?'Google ha limitado las búsquedas un rato. Usa las opciones de abajo.':`No he encontrado ${slot==='back'?'contraportadas':'portadas'} en internet. Usa las opciones de abajo.`);
     G.innerHTML=list.map(u=>`<button style="background-image:url('${u}')" data-u="${u}"></button>`).join('');
     G.onclick=async e=>{const x=e.target.closest('[data-u]');if(!x)return;toast('Poniendo imagen…');await setSlotImg(b,slot,x.dataset.u);fin()}};
   if(slot==='cover')coverCandidates(b,16).then(fill);if(slot==='back')backCandidates(b).then(fill);
