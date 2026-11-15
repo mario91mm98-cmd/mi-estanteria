@@ -45,7 +45,7 @@ input,textarea,select{user-select:text;-webkit-user-select:text}
 .btn-done{background:var(--gold);color:#2a1d10;border:none;border-radius:999px;padding:12px 22px;font-family:"Fraunces",serif;font-weight:700;font-size:1.05rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 
 .wrap{position:relative;z-index:2;padding:4px 10px calc(130px + var(--safe-b));display:flex;justify-content:center}
-.case{position:relative;width:min(980px,100%);padding:0 var(--side) 0;
+.case{position:relative;width:min(var(--case-w,980px),100%);padding:0 var(--side) 0;
   background-image:var(--case-v);background-size:auto 900px;box-shadow:0 40px 60px -20px rgba(0,0,0,.8),0 0 0 1px rgba(0,0,0,.4)}
 .case::before,.case::after{content:"";position:absolute;top:0;bottom:0;width:var(--side);pointer-events:none;
   background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(255,255,255,0) 30%,rgba(0,0,0,.25) 85%,rgba(0,0,0,.45))}
@@ -57,11 +57,19 @@ input,textarea,select{user-select:text;-webkit-user-select:text}
 .plinth{height:34px;margin:0 calc(-1 * var(--side));background-image:var(--board-tex);background-size:900px 100%;position:relative}
 .plinth::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.1) 25%,rgba(0,0,0,.25) 80%,rgba(0,0,0,.6))}
 .inner{position:relative;background-image:var(--back-img);background-size:var(--back-size,256px);background-color:var(--back-col,#2a1d14)}
+.back-cuento .inner{background-image:none;background-color:#120b07}
+.back-cuento .row{background-image:var(--back-img);background-size:auto 100%;background-repeat:repeat-x;background-position:center top}
+.back-cuento .row::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 90% at 50% 0%,rgba(255,170,80,.14),transparent 70%)}
+#drL,#drR,#drT{position:fixed;pointer-events:none;z-index:25;background-repeat:no-repeat;display:none}
+.has-drapes #drL,.has-drapes #drR,.has-drapes #drT{display:block}
+#drT{left:0;right:0;top:0;height:calc(96px + var(--safe-t));background-size:100% 100%;z-index:29}
+#drL,#drR{top:40px;bottom:0;width:clamp(16px,4.5vw,46px);background-size:100% 100%}
+#drL{left:0}#drR{right:0;transform:scaleX(-1)}
 .inner.light-off::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.18);pointer-events:none}
 
 .shelf{position:relative}
 .row{position:relative;height:var(--row-h);display:flex;align-items:flex-end;gap:1px;padding:0 10px var(--foot,5px);
-  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain}
+  overflow:hidden;scrollbar-width:none}
 .row::-webkit-scrollbar{display:none}
 .shelf .ao{position:absolute;inset:0 0 auto 0;height:100%;pointer-events:none;z-index:4;
   background:
@@ -137,6 +145,14 @@ input,textarea,select{user-select:text;-webkit-user-select:text}
 .spine.has-art .st,.spine.has-art .sa{text-shadow:0 1px 3px rgba(0,0,0,.8),0 0 1px rgba(0,0,0,.9)}
 .gold-t .st,.gold-t .sa,.gold-t .ct,.gold-t .ca{background:linear-gradient(180deg,#fff0b8,#d9a94a 40%,#f7dd8d 55%,#a77628);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 .6px 0 rgba(0,0,0,.6))}
 .spine .mk{font-size:9px;opacity:.75}
+.rotx{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:6% 0 5%;z-index:2;font-family:var(--font);color:var(--t)}
+.rotx.atop{flex-direction:column-reverse}
+.rotx .rtw{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;width:100%}
+.rotx .rt{writing-mode:vertical-rl;transform:rotate(180deg);white-space:normal;line-height:1.1;font-weight:700;text-align:center;overflow:hidden;letter-spacing:.01em;text-shadow:0 0 1px rgba(0,0,0,.2)}
+.rotx.dn .rt{transform:none}
+.rotx.caps .rt{text-transform:uppercase}
+.rotx.ital .rt{font-style:italic;font-weight:400}
+.rotx .ra{text-align:center;line-height:1.12;opacity:.72;white-space:nowrap;font-weight:400}
 .dec{position:absolute;left:0;right:0;pointer-events:none;z-index:1}
 .dec.band{height:2.2%;background:var(--t);opacity:.85}
 .dec.gline{height:1px;background:linear-gradient(90deg,#9b6e22,#f5d98a,#9b6e22);box-shadow:0 3px 0 -1px #c9a14d}
@@ -350,7 +366,7 @@ input[type=range]{width:100%;accent-color:var(--gold);height:30px}
     </div>
     <button class="btn-done" id="bDone" style="display:none">Hecho</button>
   </div>
-  <div class="wrap"><div class="case" id="case"></div></div>
+  <div class="wrap"><div class="case" id="case"></div></div><div id="drT"></div><div id="drL"></div><div id="drR"></div>
 </div>
 
 <div class="hintpill" id="hint">Mantén pulsado y arrastra para mover · toca para editar</div>
@@ -371,6 +387,7 @@ input[type=range]{width:100%;accent-color:var(--gold);height:30px}
 <input type="file" id="camIn" accept="image/*" capture="environment" hidden>
 <input type="file" id="jsonIn" accept="application/json,.json" hidden>
 
+<script src="mis-portadas.js"></script>
 <script>
 "use strict";
 /* =====================================================================
@@ -422,9 +439,10 @@ const WOODS={
 const BACKS={
   tablones:{n:'Tablones'}, paneles:{n:'Paneles clásicos'}, pintado:{n:'Pintado',tint:'#5f6f5a'}, ladrillo:{n:'Ladrillo'}, hormigon:{n:'Hormigón'},
   marmol:{n:'Mármol'}, terciopelo:{n:'Terciopelo',tint:'#1f4636'}, lino:{n:'Lino'}, corcho:{n:'Corcho'}, azulejo:{n:'Azulejo',tint:'#d9e4dc'},
-  botanico:{n:'Papel botánico',tint:'#e8dfc9'}, estrellas:{n:'Noche estrellada'}, rayas:{n:'Papel a rayas',tint:'#7a2f35'}, punto:{n:'Punto de lana',tint:'#e6dccb'},
+  botanico:{n:'Papel botánico',tint:'#e8dfc9'}, cuento:{n:'Biblioteca de cuento'}, estrellas:{n:'Noche estrellada'}, rayas:{n:'Papel a rayas',tint:'#7a2f35'}, punto:{n:'Punto de lana',tint:'#e6dccb'},
 };
 const THEMES={
+  cuento:{n:'Biblioteca de cuento',wood:'nogal',back:'cuento',mold:'clasica',lights:'guirnalda',room:'#0b0907',drapes:'#1d3b2c'},
   estudio:{n:'Estudio de nogal',wood:'nogal',back:'paneles',mold:'clasica',lights:'guirnalda',room:'#140d09'},
   esmeralda:{n:'Terciopelo esmeralda',wood:'caoba',back:'terciopelo',tint:'#1f4636',mold:'clasica',lights:'calida',room:'#0d1410'},
   nordico:{n:'Nórdico',wood:'haya',back:'pintado',tint:'#e7e2d8',mold:'recta',lights:'ninguna',room:'#d8d2c6'},
@@ -437,9 +455,64 @@ const THEMES={
   burdeos:{n:'Club de lectura',wood:'burdeos',back:'rayas',tint:'#6b2a30',mold:'clasica',lights:'calida',room:'#1c0f10'},
   botanica:{n:'Botánica',wood:'salvia',back:'botanico',tint:'#ece3cd',mold:'redonda',lights:'ninguna',room:'#3b4436'},
 };
+/* panel tallado con arco (biblioteca de cuento): 256x512 */
+function cuentoTex(woodKey){const w=WOODS[woodKey]&&!WOODS[woodKey].lac?WOODS[woodKey]:WOODS.nogal;
+  const L=mul(rgb(w.l),.62),Dk=mul(rgb(w.d),.42),GOLD=[201,160,86];const W=256,H=512,R=Math.random;
+  const x0=34,x1=222,yb=478,cx=128,cy=150,r=94;
+  return canvasTex(W,H,(x,y)=>{
+    let c=mix(L,Dk,grain(y*1.4,x,H,W,10));let f=1;
+    // pilastras laterales con estrías
+    if(x<x0-6||x>x1+6){const px=x<x0?x:W-1-x;const fl=px%9;f*=fl<2?.62:fl<3?1.15:1;if(px>x0-10)f*=.75}
+    // friso superior con dentículos
+    if(y<46){f*=.8;if(y>14&&y<30){const d=x%14;f*=d<8?1.18:.55;if(y<17)f*=1.25;if(y>27)f*=.6}if(y<6)f*=1.2}
+    // zócalo
+    if(y>yb+10){f*=.78;if(y<yb+15)f*=1.25}
+    const inR=x>=x0&&x<=x1&&y<=yb;let e=-1,lit=0;
+    if(inR){if(y>=cy){e=Math.min(x-x0,x1-x,yb-y);lit=(x-x0===e)?1:(x1-x===e)?-.7:-1}
+      else{const dd=Math.hypot(x-cx,y-cy);if(dd<=r){e=Math.min(r-dd,x-x0,x1-x);lit=(x<cx?.9:-.4)*(1-(y-cy)/-r*.2)}}}
+    if(e>=0){
+      if(e<9){f*=lit>0?1+.32*lit*(1-e/9):1+.45*lit*(1-e/9)*.9}
+      else{f*=.74;const ee=e-9;
+        // filete dorado
+        if(ee>8&&ee<10.2){c=mix(c,GOLD,.55);f*=1.1+.25*Math.sin(y*.05+x*.03)}
+        else if(ee>=10.2&&ee<12)f*=.85;
+        // roseta en el arco
+        const rd=Math.hypot(x-cx,y-(cy-30));if(rd<20){const pet=Math.cos(Math.atan2(y-(cy-30),x-cx)*8);f*=rd<5?1.35:(pet*.5+.5)*(1-rd/20)>.25?1.2:.8;if(rd<20&&rd>18)f*=.7}
+      }}
+    else if(inR===false&&x>=x0-6&&x<=x1+6&&y<yb+10&&y>46){ // marco exterior
+      f*=.9}
+    // enjutas talladas
+    if(y<cy&&y>50&&x>x0&&x<x1&&Math.hypot(x-cx,y-cy)>r+4){const sx=x<cx?x0+22:x1-22,sy=70;const d=Math.hypot(x-sx,y-sy);if(d<12)f*=d<4?1.3:.75+.35*Math.abs(Math.sin(Math.atan2(y-sy,x-sx)*3))}
+    f*=.96+(R()-.5)*.05;return mul(c,f)},true)}
+/* cortinas de terciopelo pintadas (diseño propio) */
+function velvet(w,h,col,fold){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');const C=rgb(col);
+  const im=x.createImageData(w,h),d=im.data;
+  for(let X=0;X<w;X++){const t=X/w;let s=0;for(const [k,a,ph] of fold)s+=a*Math.sin(t*k*Math.PI*2+ph);const sh=.55+.45*s;
+    for(let Y=0;Y<h;Y++){const i=(Y*w+X)*4,n=(Math.random()-.5)*.06;const v=mul(C,clamp(.35+sh*.95+n,.2,1.6));d[i]=v[0];d[i+1]=v[1];d[i+2]=v[2];d[i+3]=255}}
+  x.putImageData(im,0,0);return{c,x}}
+function drapes(){const col=(THEMES[S.settings.theme]||{}).drapes;document.body.classList.toggle('has-drapes',!!col);if(!col)return;
+  const k='dr-'+col;if(TEXC[k]===undefined){
+    // cenefa superior con ondas y flecos dorados
+    const W=900,H=200;const {c,x}=velvet(W,H,col,[[18,.5,0],[7,.3,1],[41,.12,2]]);
+    const out=document.createElement('canvas');out.width=W;out.height=H;const o=out.getContext('2d');
+    const sw=5,seg=W/sw;o.save();o.beginPath();o.moveTo(0,0);o.lineTo(W,0);for(let i=sw;i>=0;i--){}
+    o.lineTo(W,70);for(let i=sw-1;i>=0;i--){const a=i*seg,b=a+seg;o.quadraticCurveTo(a+seg/2,175,a,70)}o.closePath();o.clip();o.drawImage(c,0,0);
+    for(let i=0;i<sw;i++){const a=i*seg;const g=o.createRadialGradient(a+seg/2,40,10,a+seg/2,40,seg*.7);g.addColorStop(0,'rgba(255,255,255,.08)');g.addColorStop(1,'rgba(0,0,0,.45)');o.fillStyle=g;o.fillRect(a,0,seg,H)}
+    o.restore();
+    for(let i=0;i<sw;i++){const a=i*seg;o.beginPath();for(let t=0;t<=1.0001;t+=.01){const X=a+seg*t,Y=70+(1-Math.pow(2*t-1,2))*52;t===0?o.moveTo(X,Y):o.lineTo(X,Y)}
+      o.strokeStyle='#b8893c';o.lineWidth=5;o.stroke();o.strokeStyle='rgba(255,230,160,.5)';o.lineWidth=1.5;o.stroke();
+      for(let t=0;t<=1;t+=1/26){const X=a+seg*t,Y=70+(1-Math.pow(2*t-1,2))*52;const g=o.createLinearGradient(X,Y,X,Y+20);g.addColorStop(0,'#e3bb63');g.addColorStop(.6,'#9a6d27');g.addColorStop(1,'rgba(90,60,20,0)');o.fillStyle=g;o.fillRect(X-1.6,Y+2,3.2,18);
+        o.fillStyle='#f3d58a';o.beginPath();o.arc(X,Y+3,2,0,7);o.fill()}}
+    const sh=o.createLinearGradient(0,0,0,H);sh.addColorStop(0,'rgba(0,0,0,.55)');sh.addColorStop(.4,'rgba(0,0,0,0)');o.globalCompositeOperation='source-atop';o.fillStyle=sh;o.fillRect(0,0,W,H);
+    // laterales
+    const SW=120,SH=1400;const s2=velvet(SW,SH,col,[[2.2,.6,.4],[4.5,.3,1.2],[9,.12,.3]]);const L=s2.c,lx=s2.x;
+    const g2=lx.createLinearGradient(0,0,SW,0);g2.addColorStop(0,'rgba(0,0,0,.1)');g2.addColorStop(.85,'rgba(0,0,0,.25)');g2.addColorStop(1,'rgba(0,0,0,.75)');lx.fillStyle=g2;lx.fillRect(0,0,SW,SH);
+    // alzapaño dorado
+    TEXC[k]={t:out.toDataURL('image/png'),s:L.toDataURL('image/jpeg',.85)}}
+  const T=TEXC[k];$('#drT').style.backgroundImage=`url(${T.t})`;$('#drL').style.backgroundImage=$('#drR').style.backgroundImage=`url(${T.s})`}
 function backTex(key,tintHex,woodKey){
   const T=rgb(tintHex||BACKS[key].tint||'#666');
-  return tex(`bk-${key}-${tintHex}-${key==='tablones'||key==='paneles'?woodKey:''}`,()=>{
+  return tex(`bk-${key}-${tintHex}-${key==='tablones'||key==='paneles'||key==='cuento'?woodKey:''}`,()=>{
     const S=256,R=Math.random;
     switch(key){
     case 'pintado':return canvasTex(S,S,(x,y)=>{const n=fbm(x/S*4,y/S*4,4,4,4);return mul(T,1+(n-.5)*.12+(R()-.5)*.035)},true);
@@ -463,6 +536,7 @@ function backTex(key,tintHex,woodKey){
     case 'corcho':return canvasTex(S,S,(x,y)=>{const n=fbm(x/S*32,y/S*32,32,32,3);const t=clamp((n-.42)/.14,0,1);let c=mix([132,84,44],[214,168,112],t);c=mul(c,.88+R()*.22);if(R()<.012)c=mul(c,.55);return c},true);
     case 'azulejo':return canvasTex(S,S,(x,y)=>{const row=Math.floor(y/32),off=(row%2)*32,xx=(x+off)%S,lx=xx%64,ly=y%32;if(lx>=61||ly>=29)return mul([182,178,170],.9+R()*.15);
         const e=Math.min(lx,60-lx,ly,28-ly);let f=1+(h2(Math.floor(xx/64),row)-.5)*.06+(R()-.5)*.02;if(e<4)f*=(lx<4||ly<4)?1.06+e*.0:.86+e*.03;const g=ly<10?.05*(1-ly/10):0;return mul(T,f+g)},true);
+    case 'cuento':return cuentoTex(woodKey);
     case 'estrellas':return canvasTex(S,S,(x,y)=>{const n=fbm(x/S*3,y/S*3,3,3,5),m=fbm(x/S*6+3,y/S*6,6,6,3);let c=mix([10,14,34],[48,40,92],clamp((n-.35)*1.6,0,1));c=mix(c,[90,40,90],clamp((m-.6)*1.4,0,.5));
         const r=R();if(r<.0025)c=[255,250,235];else if(r<.008)c=mix(c,[220,220,255],.6);return c},true);
     case 'rayas':return canvasTex(S,S,(x,y)=>{const st=(x%32)<16;const n=fbm(x/S*4,y/S*4,4,4,3);let c=st?T:mul(T,.8);if(x%32===0||x%32===16)c=mix(c,[200,170,110],.5);return mul(c,.95+.08*n+(R()-.5)*.03)},true);
@@ -480,7 +554,7 @@ function backTex(key,tintHex,woodKey){
 const DECOS={
   monstera:{n:'Planta de interior',cat:'plantas',h:28,f:plantSVG}, cactus:{n:'Cactus',cat:'plantas',h:19,f:cactusSVG}, suculenta:{n:'Suculenta',cat:'plantas',h:10,f:succSVG},
   potos:{n:'Potos colgante',cat:'plantas',h:16,f:pothosSVG}, eucalipto:{n:'Eucalipto',cat:'plantas',h:30,f:eucaSVG},
-  vela:{n:'Vela en vaso',cat:'luz',h:11,f:candleSVG}, velas:{n:'Candelabro',cat:'luz',h:22,f:candlesSVG}, farol:{n:'Farol',cat:'luz',h:24,f:lanternSVG}, lampara:{n:'Lámpara',cat:'luz',h:28,f:lampSVG},
+  vela:{n:'Vela en vaso',cat:'luz',h:11,f:candleSVG}, velas:{n:'Candelabro de latón',cat:'luz',h:26,f:candlesSVG}, farol:{n:'Farol de latón',cat:'luz',h:22,f:lanternSVG}, huevo:{n:'Huevo de dragón',cat:'deco',h:19,f:eggSVG}, lampara:{n:'Lámpara',cat:'luz',h:28,f:lampSVG},
   gato:{n:'Gato de cerámica',cat:'deco',h:15,f:catSVG}, globo:{n:'Globo terráqueo',cat:'deco',h:24,f:globeSVG}, reloj:{n:'Reloj',cat:'deco',h:13,f:clockSVG},
   arena:{n:'Reloj de arena',cat:'deco',h:16,f:hourSVG}, amatista:{n:'Geoda',cat:'deco',h:9,f:geodeSVG}, taza:{n:'Taza',cat:'deco',h:9,f:mugSVG},
   sujeta:{n:'Sujetalibros',cat:'deco',h:17,f:bookendSVG}, marco:{n:'Marco de fotos',cat:'deco',h:18,f:frameSVG}, craneo:{n:'Busto clásico',cat:'deco',h:20,f:bustSVG},
@@ -642,10 +716,94 @@ function teapotSVG(p){return `<svg viewBox="0 0 170 130"><defs>${RG(p,'c',[[0,'#
   <g fill="none" stroke="#2f5d8a" stroke-width="2.2" opacity=".85"><path d="M48 76c10-14 22-14 30 0s22 14 30 0 14-10 20-2"/><circle cx="64" cy="94" r="5"/><circle cx="100" cy="94" r="5"/><path d="M44 58h80"/></g>
   <ellipse cx="54" cy="56" rx="7" ry="16" fill="#fff" opacity=".7" filter="url(#${p}bl)" transform="rotate(20 54 56)"/></g></svg>`}
 
+/* ---- objetos realistas v3 (dibujos propios) ---- */
+function brassDefs(p){return G(p,'br',['#3a2608','#7a5418','#c99a3e','#f7e3a0','#d9ae55','#8a6020','#4a300c','#a37a32','#5a3a10'])+
+  G(p,'brv',['#f5dd96','#c9963e','#6e4a14','#3a2608'],'x1="0" x2="0" y1="0" y2="1"')+
+  RG(p,'knob',[[0,'#fff4c8'],[.25,'#e6be62'],[.6,'#8f6420'],[1,'#3a2608']],'cx=".35" cy=".3" r=".8"')}
+function waxCandle(p,x,base,h,w,lean=0){const top=base-h,l=x-w/2,r=x+w/2;
+  const drips=[[.18,.22],[.55,.38],[.8,.15]].map(([t,len])=>{const dx=l+w*t;return `<path d="M${dx-2.4} ${top+2}v${h*len}a2.4 2.6 0 0 0 4.8 0v-${h*len}z" fill="url(#${p}wax)" opacity=".95"/>`}).join('');
+  return `<g transform="rotate(${lean} ${x} ${base})">
+   <rect x="${l}" y="${top}" width="${w}" height="${h}" fill="url(#${p}wax)"/>
+   <rect x="${l}" y="${top}" width="${w}" height="${h*.5}" fill="url(#${p}waxglow)"/>
+   ${drips}
+   <ellipse cx="${x}" cy="${top}" rx="${w/2}" ry="${w*.18}" fill="#f3e6c8"/>
+   <path d="M${l+1} ${top+.5}q${w/2-1} ${w*.35} ${w-2} 0" fill="#d9c49a" opacity=".7"/>
+   <path d="M${x} ${top+1}q-.6 -4 .8 -7" stroke="#1d150f" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+   ${flame(p,x+.6,top-6,.62)}</g>`}
+function waxDefs(p){return G(p,'wax',['#b9a37c','#e9dcc0','#fbf4e4','#f4e9d2','#d3c09a','#9e8862'])+
+  RG(p,'waxglow',[[0,'#ffd27a',.55],[1,'#ffb14a',0]],'cx=".5" cy="0" r=".9"')}
+function candlesSVG(p){
+  const arm=(s)=>`<path d="M80 128 C${80+s*14} 136 ${80+s*40} 140 ${80+s*46} 118 C${80+s*50} 104 ${80+s*44} 96 ${80+s*38} 102" stroke="url(#${p}br)" stroke-width="5.2" fill="none" stroke-linecap="round"/>
+    <path d="M${80+s*46} 120 C${80+s*48} 108 ${80+s*56} 100 ${80+s*56} 92" stroke="url(#${p}br)" stroke-width="4.4" fill="none"/>
+    <circle cx="${80+s*38}" cy="102" r="3.4" fill="url(#${p}knob)"/>
+    <path d="M${80+s*22} 136 c${s*6} 8 ${s*2} 16 ${-s*6} 14" stroke="url(#${p}br)" stroke-width="2.4" fill="none"/>`;
+  const cup=(x,y)=>`<path d="M${x-13} ${y}h26l-4 7h-18z" fill="url(#${p}br)"/><ellipse cx="${x}" cy="${y}" rx="14" ry="3.2" fill="url(#${p}brv)"/><rect x="${x-6}" y="${y-8}" width="12" height="9" rx="1.5" fill="url(#${p}br)"/>`;
+  return `<svg viewBox="0 0 160 270"><defs>${flameDefs(p)}${brassDefs(p)}${waxDefs(p)}${shadowF(p)}
+   ${RG(p,'spill',[[0,'#ffcf80',.38],[.5,'#ffb050',.12],[1,'#ff9d2e',0]],'cx=".5" cy=".5" r=".5"')}</defs>
+   <ellipse cx="80" cy="70" rx="80" ry="70" fill="url(#${p}spill)"/>
+   <g filter="url(#${p}ds)">
+   ${arm(-1)}${arm(1)}
+   <path d="M60 266c0-6 6-10 14-12l2-14h8l2 14c8 2 14 6 14 12z" fill="url(#${p}br)"/>
+   <ellipse cx="80" cy="266" rx="27" ry="4" fill="url(#${p}brv)"/>
+   <ellipse cx="80" cy="242" rx="9" ry="3" fill="url(#${p}brv)"/>
+   <path d="M76 242c-3-8-3-14 0-20h8c3 6 3 12 0 20z" fill="url(#${p}br)"/>
+   <ellipse cx="80" cy="216" rx="11" ry="7" fill="url(#${p}br)"/><ellipse cx="80" cy="214" rx="8" ry="2.4" fill="#fff0c0" opacity=".35"/>
+   <path d="M77 210c-2-18-2-40 0-62h6c2 22 2 44 0 62z" fill="url(#${p}br)"/>
+   <ellipse cx="80" cy="178" rx="6.5" ry="4.4" fill="url(#${p}knob)"/>
+   <ellipse cx="80" cy="146" rx="9" ry="6" fill="url(#${p}br)"/>
+   <path d="M74 140c0-6 3-10 6-12c3 2 6 6 6 12z" fill="url(#${p}br)"/>
+   ${cup(34,92)}${cup(126,92)}${cup(80,62)}
+   <path d="M77 128v-58h6v58z" fill="url(#${p}br)"/><ellipse cx="80" cy="100" rx="5.6" ry="4" fill="url(#${p}knob)"/>
+   </g>
+   ${waxCandle(p,34,84,54,14,-1)}${waxCandle(p,126,84,48,14,1.5)}${waxCandle(p,80,54,56,15)}
+   </svg>`}
+function lanternSVG(p){return `<svg viewBox="0 0 130 250"><defs>${flameDefs(p)}${brassDefs(p)}${shadowF(p)}
+   ${RG(p,'glass',[[0,'#fff3cf',.95],[.25,'#ffd88a',.75],[.6,'#e9a24a',.38],[1,'#7a4a1c',.32]],'cx=".5" cy=".62" r=".62"')}
+   ${G(p,'gl2',['rgba(255,255,255,0)','rgba(255,255,255,.55)','rgba(255,255,255,.05)','rgba(255,255,255,0)','rgba(255,255,255,.18)','rgba(255,255,255,0)'])}
+   ${RG(p,'spill',[[0,'#ffcf80',.45],[.5,'#ffb050',.14],[1,'#ff9d2e',0]],'cx=".5" cy=".5" r=".5"')}</defs>
+  <ellipse cx="65" cy="140" rx="65" ry="80" fill="url(#${p}spill)"/>
+  <g filter="url(#${p}ds)">
+   <path d="M65 4c-12 0-18 8-18 16" stroke="url(#${p}br)" stroke-width="3.2" fill="none"/><path d="M65 4c12 0 18 8 18 16" stroke="url(#${p}br)" stroke-width="3.2" fill="none"/>
+   <circle cx="65" cy="22" r="5" fill="url(#${p}knob)"/>
+   <path d="M38 52c0-14 12-26 27-26s27 12 27 26z" fill="url(#${p}br)"/>
+   <g fill="#2a1a08" opacity=".7">${[0,1,2,3,4,5].map(i=>`<circle cx="${45+i*8}" cy="44" r="1.6"/>`).join('')}</g>
+   <rect x="34" y="50" width="62" height="9" rx="3" fill="url(#${p}brv)"/>
+   <path d="M40 60C26 80 24 150 40 180h50c16-30 14-100 0-120z" fill="url(#${p}glass)"/>
+   ${flame(p,65,150,1.05)}
+   <rect x="61" y="150" width="8" height="18" rx="1" fill="#f0e2c0"/>
+   <path d="M40 60C26 80 24 150 40 180h50c16-30 14-100 0-120z" fill="url(#${p}gl2)" opacity=".9"/>
+   <path d="M44 70c-8 22-8 76 0 100" stroke="rgba(255,255,255,.55)" stroke-width="3" fill="none" stroke-linecap="round"/>
+   <g stroke="url(#${p}br)" stroke-width="2.6" fill="none"><path d="M38 64C26 90 26 150 40 178"/><path d="M92 64C104 90 104 150 90 178"/><path d="M65 60v120" opacity=".85"/>
+     <path d="M33 118c20 6 44 6 64 0"/></g>
+   <rect x="30" y="178" width="70" height="10" rx="3" fill="url(#${p}brv)"/>
+   <path d="M34 188h62l6 36H28z" fill="url(#${p}br)"/>
+   <path d="M36 200h58" stroke="#2a1a08" stroke-width="1.2" opacity=".5"/><path d="M36 203h58" stroke="#fff0c0" stroke-width=".8" opacity=".35"/>
+   <rect x="22" y="222" width="86" height="12" rx="4" fill="url(#${p}brv)"/>
+   <ellipse cx="65" cy="234" rx="44" ry="4" fill="url(#${p}br)"/>
+  </g></svg>`}
+function eggSVG(p,it){const tone=(it&&it.tone)==='esmeralda'?['#0b2a1c','#1f6b44','#5fd08a','#c9f7c4']:['#2a0606','#7a1414','#d9472a','#ffc070'];
+  const sc=[];for(let r=0;r<16;r++){const y=24+r*10.5;const off=(r%2)*7;for(let c=-1;c<10;c++){const x=10+c*14+off;sc.push(`<path d="M${x-7} ${y}q7 -10 14 0q-7 9 -14 0z" fill="url(#${p}sc)" stroke="${tone[0]}" stroke-width="1.1"/><path d="M${x-4} ${y-3}q4 -4 8 0" stroke="${tone[3]}" stroke-width=".9" fill="none" opacity=".55"/>`)}}
+  return `<svg viewBox="0 0 140 250"><defs>${brassDefs(p)}${shadowF(p)}
+   ${G(p,'sc',[tone[1],tone[2],tone[1]],'x1="0" x2="0" y1="0" y2="1"')}
+   ${RG(p,'eggsh',[[0,'#ffffff',.38],[.35,'#ffffff',0],[.75,'#000000',.35],[1,'#000000',.8]],'cx=".36" cy=".3" r=".78"')}
+   <clipPath id="${p}ec"><path d="M70 16C102 16 122 76 122 120C122 160 100 182 70 182S18 160 18 120C18 76 38 16 70 16Z"/></clipPath>
+   ${G(p,'iron',['#0d0c0b','#3a3632','#6d665c','#25221f','#0d0c0b'])}</defs>
+  <g filter="url(#${p}ds)">
+   <g clip-path="url(#${p}ec)"><rect x="0" y="0" width="140" height="200" fill="${tone[1]}"/>${sc.join('')}
+     <path d="M70 16C102 16 122 76 122 120C122 160 100 182 70 182S18 160 18 120C18 76 38 16 70 16Z" fill="url(#${p}eggsh)"/></g>
+   <ellipse cx="50" cy="62" rx="9" ry="20" fill="#fff" opacity=".22" transform="rotate(22 50 62)"/>
+   <g stroke="url(#${p}iron)" stroke-width="4" fill="none" stroke-linecap="round">
+    <path d="M36 168C30 190 22 210 18 238"/><path d="M104 168C110 190 118 210 122 238"/><path d="M70 182v56"/>
+    <path d="M34 172c-14 4-18 18-8 22"/><path d="M106 172c14 4 18 18 8 22"/>
+    <path d="M26 206c14 10 74 10 88 0"/></g>
+   <ellipse cx="70" cy="172" rx="38" ry="8" fill="none" stroke="url(#${p}iron)" stroke-width="5"/>
+   <ellipse cx="70" cy="240" rx="56" ry="6" fill="url(#${p}iron)"/>
+  </g></svg>`}
+
 /* ======================= estado ======================= */
-const FONTS={clasica:'"Libre Baskerville",Georgia,serif',elegante:'"Cormorant Garamond",Georgia,serif',display:'"Playfair Display",Georgia,serif',moderna:'"Josefin Sans",system-ui,sans-serif',condensada:'Oswald,"Arial Narrow",sans-serif',fraunces:'Fraunces,Georgia,serif'};
+const FONTS={clasica:"'Libre Baskerville',Georgia,serif",elegante:"'Cormorant Garamond',Georgia,serif",display:"'Playfair Display',Georgia,serif",moderna:"'Josefin Sans',system-ui,sans-serif",condensada:"Oswald,'Arial Narrow',sans-serif",fraunces:'Fraunces,Georgia,serif'};
 const FONT_N={clasica:'Clásica',elegante:'Elegante',display:'Display',moderna:'Moderna',condensada:'Estrecha',fraunces:'Suave'};
-const STYLES={liso:'Liso',bandas:'Bandas',dorado:'Filetes dorados',nervios:'Nervios de piel',etiqueta:'Etiqueta',bloque:'Bloque de color'};
+const STYLES={liso:'Liso',bandas:'Bandas',dorado:'Filetes dorados',nervios:'Nervios de piel',etiqueta:'Etiqueta',bloque:'Bloque de color',rotulo:'Rótulo editorial'};
 const FIN={tela:'Tela',piel:'Piel',papel:'Papel mate',brillo:'Brillo'};
 const STATUS={'':'Sin estado',pendiente:'Por leer',leyendo:'Leyendo',leido:'Leído',abandonado:'Abandonado',deseado:'Lo quiero'};
 const PAL=['#7b2d26','#a8432f','#c96b3c','#d9a441','#e8dcc0','#3e5e45','#2f4a3a','#5f7f5a','#2f4a6d','#1f2e4a','#4b6c8f','#6a4a7a','#3a2342','#2b2b2b','#efe8dc','#b98b6e','#8c3b52','#1f3b3a','#c9b48a','#d4c3a3'];
@@ -656,7 +814,7 @@ function newBook(o={}){return Object.assign({id:uid(),type:'book',title:'',autho
   mode:'spine',lean:false,edge:'#efe6d2',imgs:{},spineArt:false,age:0,locked:false,added:Date.now()},o)}
 function B(title,author,color,text,t,h,style,mode,o={}){return newBook(Object.assign({title,author,color,text,t,h,w:Math.round(h*.66*10)/10,style,mode},o))}
 const D=(kind,o={})=>Object.assign({id:uid(),type:'deco',kind,scale:1,flip:false,locked:false},o);
-function DEFAULT(){return{v:2,settings:{title:'Mi biblioteca',theme:'estudio',...themeSettings('estudio'),shelfH:30},shelves:[
+function DEFAULT(){return{v:2,settings:{title:'Mi biblioteca',theme:'estudio',...themeSettings('estudio'),shelfH:30,shelfW:62},shelves:[
   {id:uid(),locked:false,items:[D('monstera'),B('Cien años de soledad','Gabriel García Márquez','#7b2d26','#f2e6c9',3.6,23.5,'bandas','spine',{font:'clasica'}),
    B('Don Quijote de la Mancha','Miguel de Cervantes','#4a1f17','gold',5.2,25,'nervios','spine',{finish:'piel',font:'elegante',age:.45}),
    B('La sombra del viento','Carlos Ruiz Zafón','#1f1f22','#e9e2d0',4,22.5,'liso','spine',{binding:'blanda',finish:'brillo',font:'display',sagaN:'1',saga:'El Cementerio de los Libros Olvidados'}),
@@ -689,7 +847,7 @@ const Store={cache:{},
   async putImg(data){const k='img-'+uid();this.cache[k]=data;await IDB.set(k,data);return k},
   async getImg(k){if(this.cache[k])return this.cache[k];const v=await IDB.get(k);if(v)this.cache[k]=v;return v}};
 const save=()=>Store.save();
-const imgSrc=v=>!v?'':v.startsWith('img-')?(Store.cache[v]||''):v;
+const imgSrc=v=>!v?'':v.startsWith('img-')?(Store.cache[v]||''):v.startsWith('mp:')?((window.MIS_PORTADAS||{})[v.slice(3)]||{}).d||'':v;
 async function preloadImgs(){const keys=new Set();forItems(it=>{if(it.imgs)Object.values(it.imgs).forEach(v=>v&&v.startsWith('img-')&&keys.add(v));if(it.img&&it.img.startsWith('img-'))keys.add(it.img)});await Promise.all([...keys].map(k=>Store.getImg(k)))}
 function forItems(fn){S.shelves.forEach(s=>s.items.forEach(fn))}
 function findItem(id){for(const s of S.shelves){const i=s.items.findIndex(x=>x.id===id);if(i>=0)return{shelf:s,index:i,item:s.items[i]}}return null}
@@ -727,13 +885,15 @@ function pickImage(useCam){return new Promise(res=>{const inp=useCam?$('#camIn')
 
 /* ======================= render ======================= */
 let PX=8.6; // píxeles por centímetro
-function computeScale(){const w=Math.min(innerWidth,980);PX=w<430?6.6:w<620?7.2:w<820?7.8:8.6}
+function computeScale(){const W0=Math.min(innerWidth-20,980),cm=(S&&S.settings&&S.settings.shelfW)||62;
+  PX=Math.min(11,Math.max(3,(W0-22)/(cm+4.4)));
+  document.documentElement.style.setProperty('--case-w',Math.round(cm*PX+4.4*PX+22)+'px')}
 function applyLook(){
   const s=S.settings,w=WOODS[s.wood]||WOODS.roble,r=document.documentElement.style;
   r.setProperty('--board-tex',`url(${tex('wh-'+s.wood,()=>woodTex(w,false))})`);
   r.setProperty('--case-v',`url(${tex('wv-'+s.wood,()=>woodTex(w,true))})`);
   r.setProperty('--back-img',`url("${backTex(s.back,s.tint,s.wood)}")`);
-  r.setProperty('--back-size',s.back==='botanico'?'160px':s.back==='ladrillo'?'256px 240px':'256px');
+  r.setProperty('--back-size',s.back==='botanico'?'160px':s.back==='ladrillo'?'256px 240px':s.back==='cuento'?'auto 100%':'256px');
   r.setProperty('--room',s.room||'#1b1410');
   r.setProperty('--room-bg',`url(${overlayTex('room')}),linear-gradient(180deg,${s.room||'#1b1410'},${hex(mul(rgb(s.room||'#1b1410'),.7))})`);
   r.setProperty('--row-h',Math.round(s.shelfH*PX)+'px');
@@ -760,12 +920,22 @@ function spineHTML(b,W,H){
   if(b.style==='bloque')dec=`<i class="dec block"></i>`;
   let txt;
   if(ph)txt='';
+  else if(b.style==='rotulo'){
+    const stt=b.spineText||t,sa=(b.spineAuthor||authorLF(b.author)).split('\n'),dn=b.dir==='down';
+    const fa=clamp(Math.min(W*.155,PX*1.15),4.5,PX*1.4),aH=fa*1.15*sa.length;
+    const L=H*.86-aH-H*.04;let fs=Math.min(W*.44,PX*2.4);
+    const mc=spineHTML.mc||(spineHTML.mc=document.createElement('canvas').getContext('2d'));mc.font=`${b.italic?'italic 400':'700'} 100px ${FONTS[b.font]||FONTS.clasica}`;
+    const words=(b.caps?stt.toUpperCase():stt).split(/\s+/),sp=mc.measureText(' ').width/100,ww=words.map(w=>mc.measureText(w).width/100);
+    const lines=f=>{let n=1,cur=0;for(const w of ww){const a=w*f*1.02;if(cur&&cur+sp*f+a>L){n++;cur=a}else cur+=(cur?sp*f:0)+a;if(a>L)return 99}return n};
+    while(fs>4.5){if(lines(fs)*fs*1.12<=W*.86)break;fs-=.25}
+    txt=`<div class="rotx ${b.authorPos==='a'?'atop':''} ${b.caps?'caps':''} ${b.italic?'ital':''} ${dn?'dn':''}"><div class="rtw"><div class="rt" style="font-size:${fs.toFixed(2)}px;height:${L.toFixed(1)}px">${esc(stt)}</div></div><div class="ra" style="font-size:${fa.toFixed(1)}px">${sa.map(esc).join('<br>')}</div></div>`}
   else if(b.style==='nervios'&&dir!=='h'){
     const f2=clamp(Math.min(W*.15,PX*1.2),5,PX*1.3);
     txt=`<div class="txt" style="justify-content:flex-start;padding:0"><div class="st" style="position:absolute;top:19.2%;height:10%;width:86%;left:7%;writing-mode:horizontal-tb;transform:none;white-space:normal;font-size:${f2}px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden">${esc(t)}</div><div class="sa" style="position:absolute;top:67%;height:10%;width:86%;left:7%;writing-mode:horizontal-tb;transform:none;font-size:${f2*.8}px;display:flex;align-items:center;justify-content:center">${esc(a)}</div></div>`}
   else txt=`<div class="txt ${lbl?'on-label':''}" style="${b.style==='bloque'?'--pb:30%;':''}"><div class="st" style="font-size:${fs.toFixed(1)}px${b.style==='etiqueta'?';max-height:56%':''}">${esc(t)}</div>${b.style==='bloque'?`<div class="sa" style="font-size:${fa}px;position:absolute;bottom:${dir==='h'?'6%':'4%'};color:var(--c);${dir==='h'?'':'max-height:20%'}">${esc(a)}</div>`:`<div class="sa" style="font-size:${fa}px">${esc(a)}</div>`}</div>`;
   return `<div class="spine bind-${b.binding} fin-${b.finish} dir-${dir} al-${b.align} ${gold?'gold-t':''} ${art?'has-art':''}" style="width:${W}px;height:${H}px;--c:${b.color};--t:${textCol(b)};--font:${FONTS[b.font]||FONTS.clasica};${texVars(b)};${b.age?`filter:saturate(${1-b.age*.35}) sepia(${b.age*.18}) brightness(${1-b.age*.06})`:''}">
    <div class="tx"></div>${art?`<div class="art" style="--art:url('${art}')"></div>`:''}${ph?`<div class="photo" style="--ph:url('${ph}')"></div>`:dec}${txt}${b.finish==='brillo'?'<div class="gl"></div>':''}<div class="sh"></div>${b.age>.3&&!ph?`<div style="position:absolute;inset:0;box-shadow:inset 0 0 ${3+b.age*6}px rgba(255,240,210,${b.age*.35});pointer-events:none"></div>`:''}</div>`}
+function authorLF(a){a=(a||'').trim();if(a.includes(','))return a.replace(/,\s*/,',\n');const p=a.split(/\s+/);return p.length>1?p[p.length-1]+',\n'+p.slice(0,-1).join(' '):a}
 function lastName(a){a=(a||'').split(',')[0].trim();if(!a)return'';const p=a.split(/\s+/);return p.length>1?p[p.length-1]:a}
 function coverHTML(b,face='front'){
   const ph=imgSrc(face==='back'?b.imgs.back:b.imgs.cover);const gold=isGold(b);
@@ -813,11 +983,13 @@ function refreshItem(id,full){ruIds.add(id);ruFull=ruFull||!!full;clearTimeout(r
   if(f0)return render();
   for(const id of ids){const el=$(`.item[data-id="${id}"]`),f=findItem(id);if(!el||!f||el.parentElement.classList.contains('stackc')||(f.item.type==='book'&&f.item.mode==='lying'))return render();
     const n=itemEl(f.item);['index','start','end'].forEach(k=>{if(el.dataset[k]!==undefined)n.dataset[k]=el.dataset[k]});el.replaceWith(n)}},140)}
+function fitRows(){$$('.row').forEach(r=>{const kids=[...r.children].filter(k=>k.classList.contains('item')||k.classList.contains('stackc'));kids.forEach(k=>k.style.zoom='');
+  const need=r.scrollWidth,have=r.clientWidth;if(need>have+1){const z=Math.max(.5,(have-2)/need);kids.forEach(k=>k.style.zoom=z)}})}
 let editing=false,tool='move';
 function render(){
-  applyLook();
+  computeScale();applyLook();
   const c=$('#case');c.innerHTML='';const s=S.settings;
-  c.className='case mold-'+s.mold+' lights-'+s.lights;
+  c.className='case mold-'+s.mold+' lights-'+s.lights+' back-'+s.back;drapes();
   const crown=document.createElement('div');crown.className='crown';c.appendChild(crown);
   const inner=document.createElement('div');inner.className='inner'+(s.lights==='ninguna'?' light-off':'');c.appendChild(inner);
   let nb=0;
@@ -842,7 +1014,7 @@ function render(){
     el.appendChild(tools);inner.appendChild(el);
   });
   const pl=document.createElement('div');pl.className='plinth';c.appendChild(pl);
-  requestAnimationFrame(()=>$$('.garland').forEach(g=>{g.innerHTML=garlandSVG(g.clientWidth||600)}));
+  requestAnimationFrame(()=>{$$('.garland').forEach(g=>{g.innerHTML=garlandSVG(g.clientWidth||600)});fitRows()});
   $('#libSub').textContent=`${nb} libro${nb===1?'':'s'}`;
 }
 function shelfAction(a,si){
@@ -1134,9 +1306,11 @@ function openStyle(){
       if($('#tn',P)){$('#tn',P).onclick=e=>{const c=e.target.closest('.sw');if(!c)return;s.tint=c.dataset.c;save();render();draw()};$('#tnp',P).onchange=e=>{s.tint=e.target.value;save();render();draw()}}}
     if(tab==='balda'){P.innerHTML=`<label class="lbl" style="margin-top:4px">Madera / acabado</label><div class="tiles">${Object.entries(WOODS).map(([k,w])=>`<div class="tile ${s.wood===k?'sel':''}" data-k="${k}" style="flex-basis:84px"><div class="pv" style="height:84px;background:url(${tex('wh-'+k,()=>woodTex(w,false))});background-size:500px 100%"></div>${w.n}</div>`).join('')}</div>
       <label class="lbl">Moldura de la balda</label><div class="chips" id="mo">${chips({recta:'Recta',redonda:'Redondeada',clasica:'Clásica tallada',fina:'Fina'},s.mold)}</div>
-      <label class="lbl">Altura de las baldas</label><div class="ruler"><div class="val"><span id="shv">${s.shelfH}</span><small>cm</small></div><input type="range" id="shh" min="22" max="42" step="1" value="${s.shelfH}"></div>`;
+      <label class="lbl">Altura de las baldas</label><div class="ruler"><div class="val"><span id="shv">${s.shelfH}</span><small>cm</small></div><input type="range" id="shh" min="22" max="42" step="1" value="${s.shelfH}"></div>
+      <label class="lbl">Ancho de las baldas (sin deslizar)</label><div class="ruler"><div class="val"><span id="swv">${s.shelfW}</span><small>cm</small></div><input type="range" id="shw" min="40" max="110" step="1" value="${s.shelfW}"></div>
+      <p class="hint">Todo el ancho cabe en la pantalla: cuanto más ancho, más pequeños se ven los libros.</p>`;
       $('.tiles',P).onclick=e=>{const x=e.target.closest('.tile');if(!x)return;s.wood=x.dataset.k;s.theme='';save();render();draw()};
-      bindChips(P,'#mo',v=>{s.mold=v;save();render()});$('#shh',P).oninput=e=>{s.shelfH=+e.target.value;$('#shv',P).textContent=s.shelfH;save();render()}}
+      bindChips(P,'#mo',v=>{s.mold=v;save();render()});$('#shh',P).oninput=e=>{s.shelfH=+e.target.value;$('#shv',P).textContent=s.shelfH;save();render()};$('#shw',P).oninput=e=>{s.shelfW=+e.target.value;$('#swv',P).textContent=s.shelfW;save();render()}}
     if(tab==='luces'){P.innerHTML=`<div class="grid3" id="li">${[['ninguna','🌑','Sin luces'],['calida','💡','Luz cálida'],['guirnalda','✨','Guirnalda']].map(([k,i,n])=>`<div class="big ${s.lights===k?'sel':''}" data-v="${k}"><div class="ic" style="font-size:2rem;align-items:center">${i}</div>${n}</div>`).join('')}</div>
       <label class="lbl">Color de la habitación</label><div class="swrow" id="rm">${['#140d09','#1b1410','#0d1410','#0a0e1a','#1c0f10','#2b1d14','#3b4436','#d8d2c6','#cfc9c0','#e9e1d3'].map(c=>`<button class="sw ${c===s.room?'sel':''}" style="background:${c}" data-c="${c}"></button>`).join('')}<input type="color" id="rmp" value="${s.room}"></div>`;
       $('#li',P).onclick=e=>{const x=e.target.closest('.big');if(!x)return;s.lights=x.dataset.v;save();render();draw()};
@@ -1273,6 +1447,23 @@ const MY_LIBRARY=[
  {books:[['Rebelión',SCAR,'s','#1f5a5a','#f5eedf',23,3.6,0,'elegante'],['La venganza de Roma',SCAR,'s','#e8c0c0','#2b2520',22,3.4,0,'clasica'],['Imperio de fuego azul','Lucía Cerezo','c','#1f3a8a','#e9c46a',24,4.6,1],['Imperio en llamas','Lucía Cerezo','s','#b81f2a','#f5eedf',24,1.4,1],['Imperio de ruinas','Lucía Cerezo','s','#4a2a6a','#e9d8ff',24,1.8,1]],decos:[['velas'],['farol']]},
  {books:[['Promesa de sangre','Brian McClellan','c','#2a2624','#e9e2d0',23,4.2,0],['La campaña escarlata','Brian McClellan','s','#5a2a7a','#f5eedf',23,4.4,0,'elegante'],['La república de otoño','Brian McClellan','s','#2a6a3a','#f5eedf',23,4.4,0,'elegante']],decos:[]},
 ];
+const MY_LIBRARY2=[[{"t":"Juego de tronos","a":"George R. R. Martin","k":"c","h":19.4,"c":"#060606","w":12.9,"d":5.2},{"t":"A Clash of Kings","a":"George R. R. Martin","k":"s","h":20.0,"c":"#5a5a4e","d":4.5},{"t":"A Storm of Swords","a":"George R. R. Martin","k":"s","h":19.6,"c":"#423636","d":3.9},{"t":"A Feast for Crows","a":"George R. R. Martin","k":"s","h":19.6,"c":"#423636","d":4.4},{"t":"Danza de dragones","a":"George R. R. Martin","k":"s","h":20.2,"c":"#2a1e2a","d":4.5}],[{"t":"El camino de los reyes","a":"Brandon Sanderson","k":"c","h":23.3,"c":"#425a7e","w":15.1,"d":6.0},{"t":"Palabras radiantes","a":"Brandon Sanderson","k":"s","h":21.9,"c":"#424242","d":5.4},{"t":"Danzante del filo","a":"Brandon Sanderson","k":"s","h":23.3,"c":"#121212","d":3.5},{"t":"Juramentada","a":"Brandon Sanderson","k":"s","h":21.6,"c":"#664e42","d":5.6},{"t":"El ritmo de la guerra","a":"Brandon Sanderson","k":"s","h":24.4,"c":"#2a2a1e","d":5.7},{"t":"Esquirla del amanecer","a":"Brandon Sanderson","k":"s","h":24.4,"c":"#2a2a2a","d":3.4},{"t":"Viento y verdad","a":"Brandon Sanderson","k":"s","h":23.4,"c":"#66727e","d":6.0}],[{"t":"Nacidos de la bruma: El imperio final","a":"Brandon Sanderson","k":"c","h":23.5,"c":"#2a1e12","w":15.1,"d":5.0},{"t":"El pozo de la ascensión","a":"Brandon Sanderson","k":"s","h":21.1,"c":"#5a5a4e","d":6.5},{"t":"El héroe de las eras","a":"Brandon Sanderson","k":"s","h":24.4,"c":"#423642","d":4.4},{"t":"Aleación de ley","a":"Brandon Sanderson","k":"c","h":22.1,"c":"#124242","w":13.9,"d":3.6},{"t":"Sombras de identidad","a":"Brandon Sanderson","k":"s","h":23.5,"c":"#36424e","d":3.6},{"t":"Brazales de duelo","a":"Brandon Sanderson","k":"s","h":23.0,"c":"#2a2a1e","d":4.4},{"t":"El metal perdido","a":"Brandon Sanderson","k":"s","h":22.4,"c":"#2a362a","d":4.6}],[{"t":"Los asesinos del emperador","a":"Santiago Posteguillo","k":"c","h":20.5,"c":"#baae66","w":13.5,"d":5.6},{"t":"Circo Máximo: La ira de Trajano","a":"Santiago Posteguillo","k":"g","h":19.9,"c":"#dadac1","d":7.8,"f":"C","ap":"b","dr":"u","sa":"Santiago\nPosteguillo","st":"Circo Máximo la ira de Trajano"},{"t":"La legión perdida","a":"Santiago Posteguillo","k":"g","h":22.6,"c":"#4d236a","d":7.7,"f":"","ap":"b","dr":"u","sa":"Posteguillo, S.","st":"La legión perdida: el sueño inmortal de Trajano"},{"t":"Africanus: el hijo del cónsul","a":"Santiago Posteguillo","k":"c","h":19.5,"c":"#121e1e","w":12.8,"d":4.6},{"t":"Las legiones malditas","a":"Santiago Posteguillo","k":"g","h":19.4,"c":"#233f86","d":7.1,"f":"C","ap":"b","dr":"u","sa":"Posteguillo,\nSantiago"},{"t":"La traición de Roma","a":"Santiago Posteguillo","k":"g","h":23.2,"c":"#9c8fa8","d":8.0,"f":"","ap":"b","dr":"u","sa":"Posteguillo,\nSantiago"}],[{"t":"Roma soy yo","a":"Santiago Posteguillo","k":"c","h":22.9,"c":"#060606","w":14.4,"d":5.4},{"t":"Maldita Roma","a":"Santiago Posteguillo","k":"g","h":18.5,"c":"#e6c16a","d":7.3,"f":"C","ap":"a","dr":"u","sa":"Posteguillo,\nSantiago","st":"Maldita Roma: la conquista del poder de Julio César"},{"t":"Los tres mundos","a":"Santiago Posteguillo","k":"g","h":23.5,"c":"#a8c1da","d":7.9,"f":"C","ap":"b","dr":"u","sa":"Posteguillo,\nSantiago","st":"Los tres mundos: la conquista de las Galias por Julio César"},{"t":"La sombra de los dioses","a":"John Gwynne","k":"c","h":22.6,"c":"#e1e1e1","w":14.5,"d":5.4},{"t":"El hambre de los dioses","a":"John Gwynne","k":"g","h":22.6,"c":"#e6dada","d":4.2,"f":"","ap":"b","dr":"u","sa":"GWYNNE"},{"t":"La furia de los dioses","a":"John Gwynne","k":"g","h":22.6,"c":"#e6dacd","d":3.9,"f":"","ap":"b","dr":"u","sa":"GWYNNE"}],[{"t":"Alas de sangre","a":"Rebecca Yarros","k":"s","h":22.8,"c":"#ae7e5a","d":4.4},{"t":"Alas de hierro","a":"Rebecca Yarros","k":"c","h":22.8,"c":"#120606","w":14.6,"d":5.4},{"t":"Alas de ónix","a":"Rebecca Yarros","k":"s","h":22.6,"c":"#5a4e4e","d":4.9},{"t":"El águila del imperio","a":"Simon Scarrow","k":"c","h":18.5,"c":"#424236","w":13.6,"d":3.0},{"t":"Roma vincit","a":"Simon Scarrow","k":"g","h":18.5,"c":"#a8c1da","d":5.0,"f":"","ap":"a","dr":"u","sa":"Scarrow,\nSimon","st":"Roma vincit! un optio en la invasión de Britania"},{"t":"Las garras del águila","a":"Simon Scarrow","k":"g","h":23.0,"c":"#5c3186","d":5.9,"f":"C","ap":"b","dr":"u","sa":"Simon\nScarrow"},{"t":"Los lobos del águila","a":"Simon Scarrow","k":"g","h":23.5,"c":"#6a3f31","d":6.4,"f":"","ap":"a","dr":"u","sa":"Scarrow,\nSimon","st":"Los lobos del Águila"}],[{"t":"El águila abandona Britania","a":"Simon Scarrow","k":"g","h":22.6,"c":"#9cb483","d":6.7,"f":"C","ap":"b","dr":"u","sa":"Scarrow,\nSimon"},{"t":"La profecía del águila","a":"Simon Scarrow","k":"g","h":22.6,"c":"#154d4d","d":5.6,"f":"","ap":"a","dr":"u","sa":"Scarrow,\nSimon"},{"t":"El águila en el desierto","a":"Simon Scarrow","k":"c","h":18.5,"c":"#060606","w":12.0,"d":3.4},{"t":"Centurión","a":"Simon Scarrow","k":"g","h":23.4,"c":"#233f94","d":6.0,"f":"","ap":"b","dr":"u","sa":"Scarrow,\nSimon"},{"t":"El gladiador","a":"Simon Scarrow","k":"g","h":18.5,"c":"#4d3123","d":5.7,"f":"C","ap":"a","dr":"u","sa":"Scarrow,\nSimon"},{"t":"La legión","a":"Simon Scarrow","k":"g","h":18.4,"c":"#9cb4cd","d":5.6,"f":"C","ap":"b","dr":"d","sa":"Scarrow,\nSimon"},{"t":"Pretoriano","a":"Simon Scarrow","k":"g","h":18.4,"c":"#9cb4cd","d":6.3,"f":"C","ap":"b","dr":"u","sa":"Scarrow,\nSimon"},{"t":"Cuervos sangrientos","a":"Simon Scarrow","k":"g","h":23.4,"c":"#b4cdc1","d":6.1,"f":"I","ap":"b","dr":"u","sa":"Scarrow,\nSimon"}],[{"t":"Hermanos de sangre","a":"Simon Scarrow","k":"c","h":23.5,"c":"#121212","w":14.5,"d":3.6},{"t":"Britania","a":"Simon Scarrow","k":"g","h":18.4,"c":"#c1dacd","d":5.9,"f":"C","ap":"a","dr":"u","sa":"Scarrow,\nSimon"},{"t":"Invictus","a":"Simon Scarrow","k":"g","h":22.6,"c":"#a8c1da","d":5.2,"f":"","ap":"b","dr":"u","sa":"Scarrow,\nSimon"},{"t":"Los días del César","a":"Simon Scarrow","k":"g","h":18.4,"c":"#a8c1da","d":5.1,"f":"C","ap":"b","dr":"d","sa":"Scarrow,\nSimon"},{"t":"La sangre de Roma","a":"Simon Scarrow","k":"g","h":18.4,"c":"#4d236a","d":5.7,"f":"C","ap":"b","dr":"u","sa":"Scarrow,\nSimon"},{"t":"Traidores a Roma","a":"Simon Scarrow","k":"g","h":18.4,"c":"#6a2323","d":4.6,"f":"C","ap":"b","dr":"u","sa":"Scarrow,\nSimon"},{"t":"La exiliada del emperador","a":"Simon Scarrow","k":"g","h":22.6,"c":"#154d4d","d":5.5,"f":"C","ap":"a","dr":"u","sa":"Scarrow,\nSimon"},{"t":"El honor de Roma","a":"Simon Scarrow","k":"g","h":23.5,"c":"#6a2323","d":4.9,"f":"C","ap":"b","dr":"u","sa":"Scarrow,\nSimon"},{"t":"Muerte al emperador","a":"Simon Scarrow","k":"g","h":21.7,"c":"#da9c83","d":5.6,"f":"C","ap":"b","dr":"d","sa":"Simon\nScarrow"}],[{"t":"Rebelión","a":"Simon Scarrow","k":"g","h":22.5,"c":"#154d4d","d":5.7,"f":"I","ap":"a","dr":"u","sa":"Scarrow,\nSimon"},{"t":"La venganza de Roma","a":"Simon Scarrow","k":"g","h":21.5,"c":"#dab4a8","d":5.4,"f":"C","ap":"b","dr":"u","sa":"Simon\nScarrow"},{"t":"Imperio de fuego azul","a":"Lucía Cerezo","k":"c","h":22.5,"c":"#1e1e42","w":14.6,"d":4.6},{"t":"Imperio en llamas","a":"Lucía Cerezo","k":"s","h":22.5,"c":"#7e061e","d":2.8},{"t":"Imperio de ruinas","a":"Lucía Cerezo","k":"s","h":21.8,"c":"#2a1236","d":2.6}],[{"t":"Promesa de sangre","a":"Brian McClellan","k":"c","h":23.4,"c":"#121212","w":15.0,"d":4.2},{"t":"La campaña escarlata","a":"Brian McClellan","k":"g","h":23.4,"c":"#4d236a","d":6.8,"f":"I","ap":"b","dr":"u","sa":"McClellan,\nBrian","st":"La campaña escarlata: los magos de la pólvora"},{"t":"La república de otoño","a":"Brian McClellan","k":"g","h":23.9,"c":"#234d31","d":6.0,"f":"","ap":"a","dr":"u","sa":"McClellan,\nBrian"}]];
+const DECO2={0:[['huevo']],1:[['farol']],4:[['huevo',{scale:.9,tone:'esmeralda'}]],8:[['velas'],['farol']]};
+function buildMyLibrary2(prev){
+  const byT={};(prev||[]).forEach(b=>byT[(b.title||'').toLowerCase()]=b);const used=new Set();
+  const KEEP=['status','rating','review','notes','desc','descOwn','avgRating','ratingsCount','ratingSrc','publisher','year','pages','isbn','genre','saga','sagaN','infoTried','added'];
+  const shelves=MY_LIBRARY2.map((row,i)=>({id:uid(),locked:false,items:[...row.map(e=>{
+    const o=byT[e.t.toLowerCase()];if(o)used.add(o.id);const mp=(window.MIS_PORTADAS||{})[e.t];
+    const b=newBook({title:e.t,author:e.a,h:e.h,t:e.d,w:e.w||Math.round(e.h*.66*10)/10,color:e.c,text:'',locked:true,font:'clasica',
+      binding:e.k==='g'?'dura':'blanda',finish:e.k==='g'?'papel':'brillo',style:e.k==='g'?'rotulo':'liso',mode:e.k==='c'?'cover':'spine',
+      dir:e.dr==='d'?'down':'up',imgs:{},autoCover:e.k!=='c',spineArt:false});
+    if(e.k==='g'){b.caps=e.f==='C';b.italic=e.f==='I';b.authorPos=e.ap;b.spineAuthor=e.sa;if(e.st)b.spineText=e.st}
+    if(mp)b.imgs[mp.f]='mp:'+e.t;
+    if(o){KEEP.forEach(k=>{if(o[k]!==undefined&&o[k]!==''&&o[k]!==0)b[k]=o[k]});const oi=o.imgs||{};
+      ['back','edge'].forEach(f=>{if(oi[f])b.imgs[f]=oi[f]});if(e.k!=='c'&&oi.cover){b.imgs.cover=oi.cover;b.autoCover=false}}
+    return b}),...(DECO2[i]||[]).map(([k,o])=>D(k,o||{}))]}));
+  const extra=(prev||[]).filter(b=>!used.has(b.id));if(extra.length)shelves.push({id:uid(),locked:false,items:extra});
+  return shelves}
 function buildMyLibrary(){
   return MY_LIBRARY.map(sh=>({id:uid(),locked:false,items:[
     ...sh.books.map(([title,author,m,color,text,h,t,art,font])=>newBook({title,author,color,text,h,t,w:Math.round(h*.66*10)/10,mode:m==='c'?'cover':'spine',
@@ -1311,8 +1502,9 @@ let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{const 
   let st=normalize(await Store.load());
   if(!st){const old=normalize(await IDB.get('state'));st=old||DEFAULT()}
   S=st;
-  if(!S.settings.myLib1){const old=JSON.stringify(S);S.shelves=buildMyLibrary();S.settings.myLib1=true;
-    setTimeout(()=>toast('He colocado tus 63 libros',()=>{S=JSON.parse(old);S.settings.myLib1=true;save();render()}),400)}
+  if(!S.settings.myLib2){const old=JSON.stringify(S),first=!S.settings.myLib1;
+    S.shelves=buildMyLibrary2(first?[]:allBooks());Object.assign(S.settings,{myLib1:true,myLib2:true,shelfW:62,shelfH:27,theme:'cuento'},themeSettings('cuento'));
+    setTimeout(()=>toast(first?'He colocado tus 63 libros':'Estantería actualizada con tus portadas',()=>{S=JSON.parse(old);S.settings.myLib1=true;S.settings.myLib2=true;save();render()}),400)}
   allBooks().forEach(b=>{if(b.title==='(Título por confirmar)'&&/Cerezo/.test(b.author)){b.title='Imperio en llamas';b.autoCover=true;delete b.imgs.cover}});
   await preloadImgs();render();save();
   setTimeout(autoCovers,6500);
