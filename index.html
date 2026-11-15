@@ -325,6 +325,11 @@ input[type=range]{width:100%;accent-color:var(--gold);height:30px}
 .dchart i{display:block;width:100%;min-height:2px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#f2d27c,#a8742a)}.dchart small{font-size:.65rem;color:var(--muted);margin-top:3px}.dv{font-size:.6rem;color:var(--muted)}
 #lgP{width:150px;text-align:center;font-family:"Fraunces",serif;font-size:2.4rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;color:inherit;padding:4px}
 .sess div{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.88rem}.sess span{flex:1;color:var(--muted)}.sess button{background:none;border:none;color:var(--muted);cursor:pointer}
+.gsteps{margin-top:14px;background:rgba(255,255,255,.05);border-radius:16px;padding:12px 14px}.gsteps ol{margin:6px 0 4px;padding-left:20px;line-height:1.5;font-size:.9rem}
+.pastez{margin-top:8px;min-height:40px;border:1.5px dashed rgba(255,255,255,.25);border-radius:12px;padding:10px;color:var(--muted);font-size:.85rem;user-select:text;-webkit-user-select:text;outline:none}
+.pastez:empty::before{content:attr(data-ph)}
+.ogrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ogrid button{aspect-ratio:1;border:none;border-radius:12px;cursor:pointer;padding:6px;
+  background:repeating-conic-gradient(#3a2e26 0 25%,#2c231d 0 50%) 0 0/16px 16px}.ogrid img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
 .cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.cgrid button{aspect-ratio:2/3;border:none;border-radius:4px 7px 7px 4px;background:#2a221c center/cover no-repeat;box-shadow:0 4px 10px rgba(0,0,0,.4);cursor:pointer}
 #crop{position:fixed;inset:0;z-index:200;background:#0d0a08;display:none;flex-direction:column}#crop.open{display:flex}
 #crop .cw{flex:1;position:relative;overflow:hidden;touch-action:none;display:grid;place-items:center}
@@ -1272,9 +1277,9 @@ document.addEventListener('contextmenu',e=>{if(e.target.closest('.item'))e.preve
 function removeItem(id){const f=findItem(id);if(!f)return;f.shelf.items.splice(f.index,1);save();render();toast(f.item.type==='book'?`«${f.item.title}» quitado`:'Objeto quitado',()=>{f.shelf.items.splice(f.index,0,f.item);save();render()})}
 
 /* ======================= hojas ======================= */
-function openSheet(html,opts={}){document.body.classList.add('sheet-open');const sh=$('#sheet');sh.classList.toggle('tall',!!opts.tall);sh.innerHTML='<div class="grab"></div>'+html;$('#ov').classList.add('open');$('#ov').classList.toggle('clear',!!opts.clear);sh.scrollTop=0;return sh}
+function openSheet(html,opts={}){openSheet.t=Date.now();document.body.classList.add('sheet-open');const sh=$('#sheet');sh.classList.toggle('tall',!!opts.tall);sh.innerHTML='<div class="grab"></div>'+html;$('#ov').classList.add('open');$('#ov').classList.toggle('clear',!!opts.clear);sh.scrollTop=0;return sh}
 function closeSheet(){$('#ov').classList.remove('open');document.body.classList.remove('sheet-open')}
-$('#ov').addEventListener('click',e=>{if(e.target.id==='ov'){closeSheet();if(editing){tool='move';$$('#dock .ib').forEach(x=>x.classList.toggle('sel',x.dataset.tool==='move'))}}});
+$('#ov').addEventListener('click',e=>{if(e.target.id==='ov'&&Date.now()-(openSheet.t||0)>450){closeSheet();if(editing){tool='move';$$('#dock .ib').forEach(x=>x.classList.toggle('sel',x.dataset.tool==='move'))}}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#ov').classList.contains('open'))closeSheet();else closeViewer()}});
 const chips=(obj,cur,attr='v')=>Object.entries(obj).map(([k,n])=>`<button class="chip ${k===cur?'sel':''}" data-${attr}="${k}">${n}</button>`).join('');
 function bindChips(root,sel,fn){root.querySelector(sel).onclick=e=>{const b=e.target.closest('.chip');if(!b)return;$$('.chip',b.parentElement).forEach(x=>x.classList.toggle('sel',x===b));fn(b.dataset.v)}}
@@ -1353,7 +1358,7 @@ function openEditor(b,isNew,tab='tamano'){
   const up=()=>{const k=Math.min(PX*.9,150/Math.max(b.h,b.w*1.2),(Math.min(innerWidth,640)-110)/(b.h+b.w+b.t*4+8));pv.innerHTML='';
     const H=Math.round(b.h*k),W=Math.round(b.w*k),T=Math.max(5,Math.round(b.t*k));
     const views=[['spine',spineHTML(b,T,H)],['cover',book3D(b,W,H,T,-14)],['edge',edgeHTML(b,T,H)],['lying',`<div class="lying" style="width:${H}px;height:${T}px">${spineHTML(b,T,H)}</div>`]];
-    views.forEach(([m,h])=>{const d=document.createElement('div');d.style.cssText=`cursor:pointer;opacity:${m===b.mode?1:.55};transition:opacity .2s;${m==='cover'?`margin-left:${T}px`:''}`;d.innerHTML=h;d.onclick=()=>{b.mode=m;up();if(cur==='vista')pane('vista')};pv.appendChild(d)});
+    views.forEach(([m,h])=>{const d=document.createElement('div');d.style.cssText=`cursor:pointer;opacity:${m===b.mode?1:.55};transition:opacity .2s,transform .3s;transform-origin:bottom left;${m==='cover'?`margin-left:${T}px`:''}${m===b.mode&&b.lean&&(m==='spine'||m==='cover')?`;transform:rotate(-9deg);margin-left:${Math.round(H*.16)}px`:''}`;d.innerHTML=h;d.onclick=()=>{b.mode=m;up();if(cur==='vista')pane('vista')};pv.appendChild(d)});
     refreshItem(b.id,b.mode!==lastMode||b.lean!==lastLean);lastMode=b.mode;lastLean=b.lean;save()};
   let lastMode=b.mode,lastLean=b.lean,upRaf=null;const upSoon=()=>{if(upRaf)return;upRaf=requestAnimationFrame(()=>{upRaf=null;up()})};
   let cur=tab;
@@ -1456,12 +1461,49 @@ function sortBooks(how){
   save();render();toast('Ordenado',()=>{S.shelves=JSON.parse(before);save();render()})}
 
 /* ---------- objetos ---------- */
+/* objetos reales: fotos PNG de Wikimedia Commons, o pegadas desde Google */
+const EN={candelabro:'candelabra',vela:'candle',velas:'candles',farol:'lantern',lampara:'lamp',planta:'potted plant',maceta:'flower pot',cactus:'cactus',suculenta:'succulent',helecho:'fern',
+  calavera:'skull',craneo:'skull',globo:'globe','globo terraqueo':'globe',reloj:'clock','reloj de arena':'hourglass',libro:'book',libros:'books',buho:'owl',dragon:'dragon',huevo:'egg',espada:'sword',
+  jarron:'vase',jarra:'jug',pocion:'potion bottle',botella:'bottle','bola de cristal':'crystal ball',tetera:'teapot',taza:'cup',gato:'cat figurine',estatua:'statue',busto:'bust sculpture',
+  pluma:'quill',tintero:'inkwell',mascara:'venetian mask',corona:'crown',cofre:'treasure chest',llave:'key',brujula:'compass',telescopio:'telescope',mapa:'map',cuadro:'painting',flores:'flowers',rosa:'rose',
+  caballero:'knight',armadura:'armor',escudo:'shield',cristal:'crystal',piedra:'stone',concha:'seashell',vinilo:'vinyl record',camara:'camera',radio:'radio',figura:'figurine'};
+async function commonsSearch(q){const n=normT(q),en=EN[n]||n.split(' ').map(w=>EN[w]||w).join(' ');const out=[],seen=new Set();
+  for(const term of [...new Set([en+' png transparent',en+' png',q])]){try{
+    const r=await fetch(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(term+' filemime:image/png')}&gsrnamespace=6&gsrlimit=30&prop=imageinfo&iiprop=url|mime|size&iiurlwidth=500&format=json&origin=*`);
+    const j=await r.json();Object.values((j.query||{}).pages||{}).sort((a,b)=>a.index-b.index).forEach(pg=>{const ii=(pg.imageinfo||[])[0];if(ii&&ii.mime==='image/png'&&ii.thumburl&&!seen.has(ii.thumburl)&&ii.width>150){seen.add(ii.thumburl);out.push(ii.thumburl)}})}catch(e){}
+    if(out.length>=24)break}
+  return out}
+/* quitar fondo liso (blanco o de un color) desde los bordes */
+async function removeBg(data,tol=38){const img=new Image();img.src=data;await img.decode();const W=img.naturalWidth,H=img.naturalHeight;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(img,0,0);
+  const im=x.getImageData(0,0,W,H),d=im.data;const seen=new Uint8Array(W*H);const st=[];const corner=[0,W-1,(H-1)*W,(H-1)*W+W-1].map(i=>[d[i*4],d[i*4+1],d[i*4+2]]);
+  const near=i=>corner.some(c=>Math.abs(d[i*4]-c[0])+Math.abs(d[i*4+1]-c[1])+Math.abs(d[i*4+2]-c[2])<tol*3);
+  for(let X=0;X<W;X++){st.push(X,(H-1)*W+X)}for(let Y=0;Y<H;Y++){st.push(Y*W,Y*W+W-1)}
+  while(st.length){const i=st.pop();if(seen[i])continue;seen[i]=1;if(d[i*4+3]===0||near(i)){d[i*4+3]=0;const X=i%W,Y=(i/W)|0;if(X>0)st.push(i-1);if(X<W-1)st.push(i+1);if(Y>0)st.push(i-W);if(Y<H-1)st.push(i+W)}}
+  for(let i=0;i<W*H;i++){if(d[i*4+3]&&seen[i]===0){const X=i%W,Y=(i/W)|0;let n=0;for(const j of [i-1,i+1,i-W,i+W])if(j>=0&&j<W*H&&d[j*4+3]===0)n++;if(n)d[i*4+3]=Math.round(255*(1-n/5))}}
+  x.putImageData(im,0,0);return c.toDataURL('image/png')}
 function openDecos(){
   hint('Toca un objeto para ponerlo en la balda elegida');
-  const cats={magia:'Biblioteca mágica',luz:'Luz',plantas:'Plantas',deco:'Decoración',fotos:'Tus fotos',emoji:'Emoji'};let cat='magia';
+  const cats={buscar:'🔎 Fotos reales',magia:'Biblioteca mágica',luz:'Luz',plantas:'Plantas',deco:'Decoración',fotos:'Tus fotos',emoji:'Emoji'};let cat='buscar';
   const sh=openSheet(`<div class="tabs" id="dc">${Object.entries(cats).map(([k,n])=>`<button data-t="${k}" class="${k===cat?'sel':''}">${n}</button>`).join('')}</div>
    <div id="dg"></div><label class="lbl">Ponerlo en</label>${shelfSelect(S.shelves[0].id)}`,{clear:true});
+  const addImg=async(v,bg)=>{toast('Añadiendo…');let d=v.startsWith('data:')?v:await urlToData(v);if(!d)return toast('No he podido abrir esa imagen');
+    if(bg&&d.startsWith('data:'))d=await removeBg(d);const it=D('foto',{img:d.startsWith('data:')?await Store.putImg(d):d,scale:1});addDeco(it,$('#shSel',sh).value)};
   const draw=()=>{const g=$('#dg',sh);
+    if(cat==='buscar'){g.innerHTML=`<div class="sbox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="oq" placeholder="candelabro, búho, calavera, globo…" value="${esc(openDecos.q||'')}"></div>
+       <div class="chips" id="oqs" style="margin-top:8px">${['candelabro','farol','calavera','búho','dragón','globo terráqueo','reloj de arena','bola de cristal','planta','cofre','espada','corona'].map(t=>`<button class="chip sm">${t}</button>`).join('')}</div>
+       <p class="hint" id="oh" style="margin:8px 0">Fotos reales con fondo transparente (de Wikimedia Commons). Toca una para ponerla en la balda.</p><div class="ogrid" id="og"></div>
+       <div class="gsteps"><b>¿Quieres una de Google?</b><ol><li>Pulsa <b>Abrir Google Imágenes</b> (ya busca fotos sin fondo).</li><li>Mantén pulsada la que te guste → <b>Copiar imagen</b>.</li><li>Vuelve y pulsa <b>Pegar objeto copiado</b>.</li></ol>
+        <div class="act" style="margin-top:6px"><button class="btn" id="oG">🔎 Abrir Google Imágenes</button><button class="btn pri" id="oP">📋 Pegar objeto copiado</button></div><div id="oZ"></div>
+        <label class="chips" style="margin-top:8px;align-items:center;gap:8px;font-size:.85rem"><input type="checkbox" id="oBg" checked style="width:auto"> Quitar el fondo blanco automáticamente</label></div>`;
+      const run=async q=>{openDecos.q=q;if(!q)return;$('#oh',g).textContent='Buscando…';$('#og',g).innerHTML='';const L=await commonsSearch(q);if(!$('#og',g))return;
+        $('#oh',g).textContent=L.length?'Toca una para ponerla en la balda:':'No he encontrado fotos. Prueba con otra palabra o cógela de Google.';
+        $('#og',g).innerHTML=L.map(u=>`<button data-u="${u}"><img loading="lazy" src="${u}"></button>`).join('')};
+      $('#oq',g).onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();run(e.target.value.trim())}};$('#oq',g).onchange=e=>run(e.target.value.trim());
+      $('#oqs',g).onclick=e=>{const c=e.target.closest('.chip');if(c){$('#oq',g).value=c.textContent;run(c.textContent)}};
+      $('#og',g).onclick=e=>{const x=e.target.closest('[data-u]');if(x)addImg(x.dataset.u,false)};
+      $('#oG',g).onclick=()=>window.open('https://www.google.com/search?tbm=isch&tbs=ic:trans&q='+encodeURIComponent(($('#oq',g).value||'objeto decorativo')+' png'),'_blank');
+      $('#oP',g).onclick=async()=>{const v=await readClipboardImage();if(v)addImg(v,$('#oBg',g).checked);else toast('No hay ninguna imagen copiada')};
+      $('#oZ',g).appendChild(pasteZone(v=>addImg(v,$('#oBg',g).checked)));if(openDecos.q)run(openDecos.q);return}
     if(cat==='fotos'){g.innerHTML=`<div class="menu" style="margin-top:0"><button id="ph1">Hacer foto a un objeto <span>📷</span></button><button id="ph2">Elegir de la galería <span>🖼️</span></button></div><p class="hint" style="margin-top:10px">Una foto con fondo transparente (PNG recortado) queda como si estuviera en la balda. En el móvil puedes mantener pulsado un objeto en una foto para recortarlo y guardarlo.</p>`;
       const add=async cam=>{const d=await pickImage(cam);if(!d)return;const it=D('foto',{img:await Store.putImg(d)});addDeco(it,$('#shSel',sh).value)};$('#ph1',g).onclick=()=>add(true);$('#ph2',g).onclick=()=>add(false);return}
     if(cat==='emoji'){g.innerHTML=`<div class="emrow">${EMOJIS.map(e=>`<button>${e}</button>`).join('')}</div><input type="text" id="emc" placeholder="…o escribe cualquier emoji" style="margin-top:10px" maxlength="8">`;
@@ -1475,12 +1517,13 @@ function openDecoEdit(d){
   const sh=openSheet(`<h2>${def.n}</h2><div class="pvbox" id="dpv"></div>
    <label class="lbl">Tamaño</label><input type="range" id="dsz" min=".4" max="2" step=".05" value="${d.scale||1}">
    ${def.emoji?`<label class="lbl">Emoji</label><div class="emrow">${EMOJIS.map(e=>`<button>${e}</button>`).join('')}</div>`:''}
-   ${def.photo||d.kind==='marco'?`<div class="act"><button class="btn" id="dph">🖼️ ${d.kind==='marco'?'Poner foto en el marco':'Cambiar foto'}</button></div>`:''}
+   ${def.photo||d.kind==='marco'?`<div class="act"><button class="btn" id="dph">🖼️ ${d.kind==='marco'?'Poner foto en el marco':'Cambiar foto'}</button>${def.photo?'<button class="btn" id="dbg">✂️ Quitar fondo</button>':''}</div>`:''}
    <label class="lbl">Balda</label>${shelfSelect(findItem(d.id).shelf.id)}
    <div class="act"><button class="btn dng" id="ddel">Quitar</button><button class="btn" id="dfl">↔ Girar</button><button class="btn" id="dlk">${d.locked?'🔒 Fijado':'🔓 Fijar'}</button><button class="btn pri grow" id="dok">Listo</button></div>`,{clear:true});
   const up=()=>{const p=$('#dpv',sh);p.innerHTML='';const e=itemEl(d);e.classList.remove('locked');p.appendChild(e);refreshItem(d.id);save()};
   $('#dsz',sh).oninput=e=>{d.scale=+e.target.value;up()};
   if(def.emoji)$('.emrow',sh).onclick=e=>{if(e.target.tagName==='BUTTON'){d.emoji=e.target.textContent;up()}};
+  if($('#dbg',sh))$('#dbg',sh).onclick=async()=>{const src=imgSrc(d.img);let data=src.startsWith('data:')?src:await toLocal(src);if(!data)return toast('No puedo editar esa imagen');d.img=await Store.putImg(await removeBg(data));up();toast('Fondo quitado')};
   if($('#dph',sh))$('#dph',sh).onclick=async()=>{const x=await pickImage(false);if(x){d.img=await Store.putImg(x);up()}};
   $('#shSel',sh).onchange=e=>{const f=findItem(d.id);f.shelf.items.splice(f.index,1);S.shelves.find(s=>s.id===e.target.value).items.push(d);save();render()};
   $('#dfl',sh).onclick=()=>{d.flip=!d.flip;up()};$('#dlk',sh).onclick=e=>{d.locked=!d.locked;e.target.textContent=d.locked?'🔒 Fijado':'🔓 Fijar';up()};
@@ -1688,6 +1731,7 @@ function buildMyLibrary(){
 let coverRun=false;
 async function fetchCoverFor(b){
   const last=lastName(b.author);
+  try{const a=await appleCovers(b);if(a.length){const ok=await loadImg(a[0]);if(ok)return a[0]}}catch(e){}
   // 1) Google Books (edición en español si existe)
   try{const q=`intitle:${b.title.replace(/[:()]/g,' ')} inauthor:${last}`;
     for(const lang of ['&langRestrict=es','']){
@@ -1700,7 +1744,26 @@ async function fetchCoverFor(b){
     const d=(j.docs||[]).find(x=>x.cover_i&&(x.language||[]).includes('spa'))||(j.docs||[]).find(x=>x.cover_i);if(d)return await loadImg(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`)}catch(e){}
   return null}
 let coverRL=false;
+function jsonp(url){return new Promise(res=>{const cb='jp'+Math.random().toString(36).slice(2);const sc=document.createElement('script');let t;
+  const done=v=>{clearTimeout(t);delete window[cb];sc.remove();res(v)};t=setTimeout(()=>done(null),9000);window[cb]=d=>done(d);sc.onerror=()=>done(null);sc.src=url+'&callback='+cb;document.head.appendChild(sc)})}
+const normT=t=>(t||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+async function appleCovers(b){const j=await jsonp(`https://itunes.apple.com/search?term=${encodeURIComponent(b.title+' '+lastName(b.author))}&media=ebook&country=es&limit=15`);
+  const key=normT(b.title).split(' ').filter(w=>w.length>2).slice(0,3);
+  return ((j&&j.results)||[]).filter(r=>r.artworkUrl100).map(r=>({u:r.artworkUrl100.replace(/\/\d+x\d+bb\./,'/600x900bb.'),sc:key.filter(w=>normT(r.trackName).includes(w)).length+(normT(r.artistName).includes(normT(lastName(b.author)))?1:0)}))
+    .sort((a,c)=>c.sc-a.sc).filter(x=>x.sc>0).map(x=>x.u)}
+async function readClipboardImage(){try{if(navigator.clipboard&&navigator.clipboard.read){const items=await navigator.clipboard.read();
+    for(const it of items){const ty=it.types.find(t=>t.startsWith('image/'));if(ty){const bl=await it.getType(ty);return await fileToData(new File([bl],'p',{type:ty}),1200)}
+      if(it.types.includes('text/plain')){const tx=await (await it.getType('text/plain')).text();if(/^https?:\/\//.test(tx.trim()))return tx.trim()}}}}catch(e){}
+  try{const tx=(await navigator.clipboard.readText()).trim();if(/^https?:\/\//.test(tx))return tx}catch(e){}return null}
+async function urlToData(u){const l=await toLocal(u);if(l)return l;return (await loadImg(u))?u:null}
+/* zona para pegar (mantener pulsado → Pegar) */
+function pasteZone(onImg){const z=document.createElement('div');z.className='pastez';z.contentEditable='true';z.setAttribute('inputmode','none');z.innerHTML='';z.dataset.ph='…o mantén pulsado aquí y elige «Pegar»';
+  z.addEventListener('paste',async e=>{e.preventDefault();const dt=e.clipboardData;const f=[...(dt.items||[])].find(i=>i.type.startsWith('image/'));
+    if(f){const d=await fileToData(f.getAsFile(),1200);onImg(d);return}const tx=(dt.getData('text/plain')||'').trim();const html=dt.getData('text/html')||'';const m=html.match(/<img[^>]+src="([^"]+)"/i);
+    const u=m?m[1]:(/^https?:\/\//.test(tx)?tx:null);if(u)onImg(u);else toast('No he encontrado ninguna imagen en lo que has copiado')});
+  z.addEventListener('input',()=>{z.innerHTML=''});return z}
 async function coverCandidates(b,max=12){const last=lastName(b.author),out=[],seen=new Set();const add=u=>{if(u&&!seen.has(u)){seen.add(u);out.push(u)}};coverRL=false;
+  try{(await appleCovers(b)).slice(0,8).forEach(add)}catch(e){}
   const qs=[`intitle:${b.title.replace(/[:()¡!¿?]/g,' ')} inauthor:${last}`,`${b.title} ${last}`];if(b.isbn)qs.unshift('isbn:'+b.isbn);
   for(const q of qs){for(const lang of ['&langRestrict=es','']){try{
     const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=20&printType=books${lang}`);if(r.status===429){coverRL=true;break}if(!r.ok)continue;const j=await r.json();
@@ -1709,12 +1772,18 @@ async function coverCandidates(b,max=12){const last=lastName(b.author),out=[],se
   try{const r=await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(b.title)}&author=${encodeURIComponent(last)}&limit=15&fields=cover_i,language`);const j=await r.json();
     (j.docs||[]).filter(d=>d.cover_i).sort((a,c)=>((c.language||[]).includes('spa')?1:0)-((a.language||[]).includes('spa')?1:0)).forEach(d=>add(`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`))}catch(e){}
   return out.slice(0,max)}
-async function setCoverFrom(b,url){const big=url.includes('googleapis')||url.includes('books.google')?(await loadImg(url+'&fife=w600-h900'))||url:url;const local=await toLocal(big);
+async function setCoverFrom(b,url){if(url.startsWith('data:')){b.imgs.cover=await Store.putImg(url);b.autoCover=false;save();refreshItem(b.id);return}const big=url.includes('googleapis')||url.includes('books.google')?(await loadImg(url+'&fife=w600-h900'))||url:url;const local=await toLocal(big);
   b.imgs.cover=local?await Store.putImg(local):big;b.autoCover=false;if(b.mpOff)b.mpOff=b.mpOff.filter(x=>x!=='cover');save();refreshItem(b.id)}
 function openCoverPicker(b,after){
   const sh=openSheet(`<h2>Portada de «${esc(b.title)}»</h2><p class="hint" id="cpH">Buscando portadas en internet…</p><div class="cgrid" id="cpG"></div>
-    <div class="menu" style="margin-top:12px"><button id="cpWeb">Buscar imágenes en Google <span>↗</span></button><button id="cpGal">Elegir una imagen de la galería <span>🖼️</span></button><button id="cpCam">Hacer foto a la portada <span>📷</span></button></div>
-    <p class="hint">Si no aparece la buena: «Buscar imágenes en Google», mantén pulsada la portada, «Descargar imagen», y vuelve aquí a «Elegir de la galería».</p>`,{tall:true});
+    <div class="gsteps"><b>¿No está la buena? Cógela de Google:</b>
+      <ol><li>Pulsa <b>Abrir Google Imágenes</b>.</li><li>Toca la portada que quieras y <b>mantenla pulsada</b> → <b>Copiar imagen</b>.</li><li>Vuelve aquí y pulsa <b>Pegar portada copiada</b>.</li></ol>
+      <div class="act" style="margin-top:6px"><button class="btn" id="cpWeb">🔎 Abrir Google Imágenes</button><button class="btn pri" id="cpPaste">📋 Pegar portada copiada</button></div><div id="cpZ"></div></div>
+    <div class="menu" style="margin-top:12px"><button id="cpGal">Elegir una imagen de la galería <span>🖼️</span></button><button id="cpCam">Hacer foto a la portada <span>📷</span></button></div>`,{tall:true});
+  const useImg=async v=>{if(!v)return;toast('Poniendo portada…');let d=v.startsWith('data:')?v:await urlToData(v);if(!d)return toast('No he podido abrir esa imagen. Prueba con «Copiar imagen» en vez del enlace');
+    if(d.startsWith('data:')){const c=await cropImage(d,'cover');if(!c)return;d=c}await setCoverFrom(b,d);toast('Portada puesta');closeSheet();after&&after()};
+  $('#cpZ',sh).appendChild(pasteZone(useImg));
+  $('#cpPaste',sh).onclick=async()=>{const v=await readClipboardImage();if(v)useImg(v);else toast('No hay ninguna imagen copiada. Mantén pulsada la portada en Google → «Copiar imagen»')};
   coverCandidates(b,16).then(list=>{const G=$('#cpG',sh);if(!G)return;$('#cpH',sh).textContent=list.length?'Toca la portada correcta:':(coverRL?'Google ha limitado las búsquedas un rato. Prueba en unos minutos o usa las opciones de abajo.':'No he encontrado portadas. Usa las opciones de abajo.');
     G.innerHTML=list.map(u=>`<button style="background-image:url('${u}')" data-u="${u}"></button>`).join('');
     G.onclick=async e=>{const x=e.target.closest('[data-u]');if(!x)return;toast('Poniendo portada…');await setCoverFrom(b,x.dataset.u);toast('Portada puesta');closeSheet();after&&after()}});
